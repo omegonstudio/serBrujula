@@ -74,10 +74,18 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 
 ---
 
+## Calidad / proceso
+
+| ID | Tarea | Estado | Notas |
+|----|-------|--------|-------|
+| Q1 | Gate permanente docs + testing | DONE | Rule `10-docs-and-testing.mdc` alwaysApply; guide + tracker + roadmap |
+
+---
+
 ## Bloqueos activos
 
 _Ninguno._
 
 ## Última actualización
 
-Fase D completada — reservas propias, holds, pagos, sync Google Calendar, admin agenda. E2E booking OK.
+Gate Q1 — documentación y testing obligatorios formalizados en Cursor Rules y DEVELOPMENT_GUIDE.

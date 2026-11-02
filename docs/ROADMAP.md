@@ -4,6 +4,8 @@ Estados permitidos: `NOT_STARTED` | `PLANNED` | `IN_PROGRESS` | `TESTING` | `COM
 
 Una funcionalidad no se marca `COMPLETED` hasta estar implementada y probada.
 
+**Proceso de calidad:** docs + tests son gate permanente (Cursor Rule `10-docs-and-testing.mdc`). Checklist y resumen de cierre en [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md). El gate aplica hacia adelante y al modificar código existente.
+
 ---
 
 ## Etapa 1 — Web autoadministrable y ecommerce

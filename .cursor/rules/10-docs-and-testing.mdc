@@ -1,0 +1,51 @@
+---
+description: Gate obligatorio — no cerrar sin documentación actualizada y pruebas ejecutadas
+alwaysApply: true
+---
+
+# Gate: documentación + testing
+
+Prioridad de calidad en **toda** tarea. No se cierra código sin docs y tests.
+
+## Antes de cerrar
+
+1. Revisar qué archivos de `docs/` afectan el cambio; actualizar solo los afectados.
+2. Sincronizar `TASK_TRACKER.md` y, si aplica, `ROADMAP.md`.
+3. No documentar como terminado lo no implementado.
+4. Toda feature nueva o modificada incluye pruebas (unit / integration / E2E según el caso).
+5. Integraciones (MP, Google Calendar, Resend, S3): mocks; **sin credenciales reales**.
+6. Ejecutar tests del módulo + relacionados; lint/build si hubo cambios en `src/`.
+7. No borrar ni debilitar tests solo para que pasen; si el requisito cambió, reemplazar y documentar.
+
+## Matriz docs (mínima)
+
+- DB → `DATA_MODEL.md`
+- Arquitectura → `ARCHITECTURE.md`
+- Integración → `INTEGRATIONS.md`
+- Diseño → `DESIGN_SYSTEM.md`
+- Alcance/estado etapa → `ROADMAP.md`
+- Progreso → `TASK_TRACKER.md`
+- Proceso → `DEVELOPMENT_GUIDE.md`
+
+## Checklist DONE / COMPLETED
+
+- [ ] Implementación y validaciones
+- [ ] Tests creados y **ejecutados** OK
+- [ ] Regresión de módulos afectados
+- [ ] Lint/build si aplica
+- [ ] Docs + tracker (+ roadmap si corresponde)
+
+Si falta algo: `TESTING` | `IN_PROGRESS` | `BLOCKED`. Nunca COMPLETED solo por prueba manual.
+
+## Resumen final obligatorio
+
+1. Qué se implementó  
+2. Archivos modificados  
+3. Tests agregados  
+4. Tests ejecutados  
+5. Resultado de tests  
+6. Resultado del build (o N/A si no hubo cambios en `src/`)  
+7. Documentación actualizada  
+8. Pendientes  
+
+No afirmar que un test pasó si no se ejecutó.

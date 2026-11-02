@@ -1,15 +1,33 @@
 ---
-description: Estrategia de pruebas — unit, integration, E2E de flujos comerciales
+description: Estrategia de pruebas — unit, integration, E2E, mocks y casos límite
 globs: "tests/**/*,**/*.{test,spec}.{ts,tsx}"
 alwaysApply: false
 ---
 
 # Testing
 
-- Unit: reglas de dominio (totales, stock, slots, buffers, TZ).
-- Integration: Prisma + casos de pedido/pago/idempotencia webhook (DB de test).
-- E2E (Playwright): flujo de compra; luego flujo de reserva + sync (etapa 2).
-- Cubrir límites: stock 0, webhook duplicado, hold expirado, solape de booking, FreeBusy ocupado.
-- No marcar features COMPLETED en roadmap/tracker sin prueba del flujo crítico.
-- Datos de demo explícitos; no asserts contra mocks presentados como producción.
-- Regresión: si tocás payments/inventory/booking, corré los tests de ese módulo.
+El cierre de tarea lo rige `10-docs-and-testing.mdc`. Esta rule detalla **cómo** probar.
+
+## Matriz
+
+| Tipo | Cuándo |
+|------|--------|
+| Unit | Reglas, cálculos, validaciones, slots, precios, estados, transforms |
+| Integration | Prisma, transacciones, webhooks, pagos, Calendar, mail, storage |
+| E2E | Flujos reales: compra; reserva→pago→confirmación; admin crítico |
+
+## Integraciones externas
+
+- Mockear Mercado Pago, Google Calendar, Resend, S3.
+- Cubrir éxito y fallo. Sin credenciales reales ni asserts contra APIs live.
+
+## Casos límite (cuando aplique)
+
+Datos inválidos, faltantes, duplicados, concurrencia, permisos, sesión, errores de persistencia, estados inesperados, outages externos.
+
+## Reglas
+
+- No marcar COMPLETED sin prueba del flujo crítico ejecutada.
+- Regresión: al tocar payments/inventory/booking/calendar, correr tests del módulo.
+- No eliminar ni debilitar tests solo para que pasen; si el requisito cambió, reemplazar y documentar.
+- Datos demo explícitos; no presentar mocks como producción.

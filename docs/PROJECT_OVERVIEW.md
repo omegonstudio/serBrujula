@@ -46,11 +46,12 @@ Una **única plataforma modular** que evoluciona en siete etapas, sin reconstrui
 8. Sin credenciales en el repositorio.
 9. Un flujo no está terminado si solo “se ve bien”.
 10. Experiencia coherente entre módulos.
-11. Documentación actualizada.
+11. Documentación actualizada (parte del desarrollo, no un paso posterior).
 12. Respetar Cursor Rules en cada tarea.
 13. Código mantenible y comprensible.
 14. Revisar relaciones entre módulos antes de cambiar.
 15. Sin dependencias innecesarias.
+16. Tests son parte del desarrollo; no cerrar sin pruebas ejecutadas ni docs afectadas actualizadas (ver gate en `.cursor/rules/10-docs-and-testing.mdc` y [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md)).
 
 ## Referencia visual
 

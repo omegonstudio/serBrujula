@@ -20,6 +20,7 @@ Plataforma de autoconocimiento y bienestar (“el cuerpo como brújula”). Una 
 - Admin usable por persona no técnica.
 - YAMI es solo referencia visual: no copiar código, arquitectura, deps ni lógica.
 - Calidad > velocidad; sin sobreingeniería; sin secretos en el repo.
+- **Gate de calidad prioritario:** `10-docs-and-testing.mdc` — no cerrar sin documentación actualizada y pruebas ejecutadas.
 - Actualizar `docs/TASK_TRACKER.md` y no marcar COMPLETED sin pruebas.
 
 Leer `docs/PROJECT_OVERVIEW.md` y `docs/ROADMAP.md` ante dudas de alcance.
