@@ -1,0 +1,27 @@
+---
+description: Calidad TypeScript — tipado, funciones pequeñas, errores, sin any injustificado
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Calidad de código
+
+- TypeScript estricto. Evitar `any`; si es inevitable, comentar por qué y acotar el alcance.
+- Funciones pequeñas, nombres explícitos, una responsabilidad.
+- Validar entradas en la frontera del servidor con Zod (o equivalente).
+- Errores de dominio tipados; no tragar excepciones ni `catch` vacíos.
+- No duplicar lógica: extraer a módulo compartido del dominio correcto.
+- Preferir immutabilidad en cálculos de dinero/stock; enteros en centavos.
+- Imports claros; no circularidad entre módulos.
+- Comentarios solo para intención no obvia; el código debe leerse solo.
+
+```typescript
+// ❌
+catch (e) {}
+
+// ✅
+catch (e) {
+  logger.error("checkout.failed", { orderId, error: e });
+  throw new CheckoutError("No se pudo iniciar el pago", { cause: e });
+}
+```

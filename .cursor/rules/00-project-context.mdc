@@ -1,0 +1,25 @@
+---
+description: Contexto de producto Ser Brújula — visión, etapas y restricciones
+alwaysApply: true
+---
+
+# Ser Brújula — contexto
+
+Plataforma de autoconocimiento y bienestar (“el cuerpo como brújula”). Una sola app modular; siete etapas. Ahora priorizamos etapas 1–2.
+
+## Etapas
+
+1. Web + ecommerce + admin CMS  
+2. Reservas propias + Google Calendar  
+3–7. Talleres, cursos, membresía, comunidad, formaciones (solo arquitectura/docs hasta su fase)
+
+## Reglas de producto
+
+- No presentar funcionalidades futuras como disponibles.
+- Compra/reserva sin forzar cuenta en etapas 1–2; identity preparada para después.
+- Admin usable por persona no técnica.
+- YAMI es solo referencia visual: no copiar código, arquitectura, deps ni lógica.
+- Calidad > velocidad; sin sobreingeniería; sin secretos en el repo.
+- Actualizar `docs/TASK_TRACKER.md` y no marcar COMPLETED sin pruebas.
+
+Leer `docs/PROJECT_OVERVIEW.md` y `docs/ROADMAP.md` ante dudas de alcance.

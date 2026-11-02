@@ -1,0 +1,18 @@
+---
+description: Backend, Prisma y reglas de integridad — transacciones y validación
+globs: "src/modules/**/*,prisma/**/*,src/app/api/**/*,src/lib/**/*"
+alwaysApply: false
+---
+
+# Backend y base de datos
+
+- Toda mutación de negocio valida input y autoriza (admin vs público).
+- Precios, totales, stock y disponibilidad se calculan/leen en servidor.
+- Usar transacciones Prisma cuando stock, pedido y pago deban ser atómicos.
+- Migraciones para todo cambio de schema; nada destructivo sin plan.
+- Timestamps UTC; TZ de negocio `America/Argentina/Buenos_Aires` vía `lib/timezone`.
+- No confiar en IDs/cantidades/precios del cliente sin revalidar contra DB.
+- Logs estructurados sin PII sensible ni secretos.
+- Soft-deactivate productos en lugar de borrar historial comercial cuando aplique.
+
+Modelo: `docs/DATA_MODEL.md`.

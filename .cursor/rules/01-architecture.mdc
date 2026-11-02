@@ -1,0 +1,18 @@
+---
+description: Arquitectura modular Next.js — límites de módulos y anti-sobreingeniería
+alwaysApply: true
+---
+
+# Arquitectura
+
+- Monolito modular: Next.js App Router + TypeScript. Sin microservicios ni API Node aparte.
+- Lógica de negocio en `src/modules/<dominio>/` (domain → application → infrastructure).
+- UI en `src/components` (design system) o `modules/*/ui`. No mezclar reglas de stock/pagos en JSX.
+- Compartido en `src/lib` (prisma, env, logger, errors, timezone).
+- Route Handlers para webhooks/OAuth; Server Actions para mutaciones de app.
+- Feature flags / nav: no montar UI de etapas futuras.
+- No tablas vacías de dominios 3–7. Cambios de schema solo con migraciones Prisma.
+- Pagos detrás de `PaymentProvider`. Calendar detrás del módulo `calendar`.
+- Antes de cambiar un módulo, revisar dependencias (orders ↔ payments ↔ inventory; booking ↔ calendar).
+
+Detalle: `docs/ARCHITECTURE.md`.

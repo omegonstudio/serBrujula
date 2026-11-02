@@ -1,0 +1,19 @@
+---
+description: Reservas y Google Calendar — slots, holds, sync y anti-doble-booking
+globs: "src/modules/booking/**/*,src/modules/calendar/**/*"
+alwaysApply: false
+---
+
+# Booking + Google Calendar
+
+- TZ canónica: `America/Argentina/Buenos_Aires`. No usar TZ del browser como fuente de verdad.
+- Slots = reglas + excepciones + duración + buffers + bookings/holds + FreeBusy Google.
+- Consultorio y domicilio tienen disponibilidad independiente.
+- Hold temporal durante checkout; revalidar en transacción al confirmar.
+- Status de reserva ≠ sync: `PENDING_PAYMENT|CONFIRMED|CANCELLED|RESCHEDULED` + `syncStatus`.
+- Nunca marcar `SYNCED` si Google falló; usar `SYNC_PENDING` / `SYNC_FAILED` + reintento.
+- OAuth: scopes mínimos; tokens cifrados; refresh solo servidor.
+- Eventos: guardar `googleEventId`; cancel/reschedule actualiza Calendar; sin PII innecesaria en título.
+- Servicios y precios no hardcodeados: admin CRUD.
+
+Ver `docs/DATA_MODEL.md` y `docs/INTEGRATIONS.md`.

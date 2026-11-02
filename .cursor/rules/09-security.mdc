@@ -1,0 +1,16 @@
+---
+description: Seguridad — secretos, authz, PII, pagos y tokens OAuth
+alwaysApply: true
+---
+
+# Seguridad
+
+- Nunca commitear `.env`, keys, tokens ni dumps de webhook con secretos.
+- Mantener `.env.example` sin valores reales.
+- AuthZ: rutas `/admin` solo `ADMIN`. Mutaciones admin verifican sesión en servidor.
+- Validar y sanitizar todo input; rate-limit formularios públicos cuando exista infra.
+- PII mínima en logs, emails y eventos de Calendar.
+- Pagos: secretos MP solo servidor; verificar webhooks; idempotencia.
+- OAuth Google: tokens cifrados en DB; no exponer refresh/access al cliente.
+- Uploads: autenticados, tipos/tamaño limitados, storage privado + URLs firmadas o CDN controlado.
+- Dependencias: no agregar paquetes innecesarios; revisar impacto de auth/pago.

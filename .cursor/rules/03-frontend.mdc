@@ -1,0 +1,16 @@
+---
+description: Frontend Next.js — RSC por defecto, a11y, estados de UI
+globs: "src/app/**/*.{ts,tsx},src/components/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Frontend
+
+- Server Components por defecto. `"use client"` solo para estado, efectos o APIs del browser.
+- Mobile-first, responsive; probar layouts clave en viewport chico.
+- Accesibilidad: labels, foco visible, contraste, `alt`, errores de form asociados al campo.
+- Toda vista interactiva contempla: loading, empty, error, success.
+- No hardcodear precios, stock, horarios ni textos de marca editables (usar CMS/DB).
+- No exponer secretos ni tokens en el cliente (`NEXT_PUBLIC_*` solo datos públicos).
+- Formularios: validación cliente + revalidación servidor.
+- Admin: claridad y densidad; público: identidad de `docs/DESIGN_SYSTEM.md`.

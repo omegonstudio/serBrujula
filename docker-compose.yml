@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ser-brujula-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: serbrujula
+      POSTGRES_PASSWORD: serbrujula
+      POSTGRES_DB: ser_brujula
+    ports:
+      - "5434:5432"
+    volumes:
+      - ser_brujula_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U serbrujula -d ser_brujula"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ser_brujula_pg:

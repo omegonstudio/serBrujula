@@ -1,0 +1,20 @@
+---
+description: Identidad visual Ser Brújula — tokens, craft y anti-clon YAMI
+globs: "src/components/**/*,src/styles/**/*,src/app/(public)/**/*"
+alwaysApply: false
+---
+
+# Design system
+
+Fuente de verdad: `docs/DESIGN_SYSTEM.md`.
+
+## Marca propia (no clonar YAMI)
+
+- Colores: forest `#2F4A3C`, sage `#7A9A86`, clay `#C4A484`, sand `#F3EDE4`, cream `#FAF8F5`, ink `#1C1A17`.
+- Tipo: Fraunces (display) + Source Sans 3 (UI). No Josefin Sans. No paleta violeta/dorado cósmica.
+- Hero: full-bleed, una composición (marca + titular + frase + CTAs + imagen). Sin cards en hero.
+- Cards solo para interacción (producto, forms). Motion sobrio; respetar `prefers-reduced-motion`.
+- Botones: primary forest, accent clay, outline/ghost coherentes; focus ring visible.
+- Nav fixed con blur al scroll; secciones con heading + regla corta + copy `max-w-2xl`.
+- Tienda integrada a la marca; sin look marketplace genérico.
+- Reutilizar componentes del design system; no inventar estilos one-off.

@@ -1,0 +1,18 @@
+---
+description: Ecommerce — stock, precios servidor, pedidos y webhooks de pago
+globs: "src/modules/catalog/**/*,src/modules/cart/**/*,src/modules/checkout/**/*,src/modules/orders/**/*,src/modules/payments/**/*"
+alwaysApply: false
+---
+
+# Ecommerce
+
+- Nunca confiar precios del frontend; `priceCents` desde Product/DB al armar Order.
+- Validar stock antes de crear pedido y otra vez al confirmar pago.
+- `PaymentProvider` abstrae MP (y Stripe futuro). Access token solo servidor.
+- Pedido `PAID` solo tras webhook/IPN verificado e idempotente.
+- Return URL del usuario ≠ confirmación de pago.
+- Mantener `OrderStatusHistory`. Snapshots en OrderItem (nombre/precio).
+- Envío vs retiro: `fulfillmentType` explícito; shipment según corresponda.
+- Admin puede cambiar estados de fulfillment, no inventar pagos aprobados a mano sin registro.
+
+Ver `docs/INTEGRATIONS.md` (Mercado Pago).

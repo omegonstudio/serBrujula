@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  --color-forest: #2f4a3c;
+  --color-sage: #7a9a86;
+  --color-clay: #c4a484;
+  --color-sand: #f3ede4;
+  --color-ink: #1c1a17;
+  --color-stone: #6b6560;
+  --color-cream: #faf8f5;
+  --color-line: #e4ddd4;
+  --color-error: #a63d3d;
+  --color-success: #3d6b4f;
+
+  --background: var(--color-cream);
+  --foreground: var(--color-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-forest: var(--color-forest);
+  --color-sage: var(--color-sage);
+  --color-clay: var(--color-clay);
+  --color-sand: var(--color-sand);
+  --color-ink: var(--color-ink);
+  --color-stone: var(--color-stone);
+  --color-cream: var(--color-cream);
+  --color-line: var(--color-line);
+  --color-error: var(--color-error);
+  --color-success: var(--color-success);
+  --font-sans: var(--font-source-sans);
+  --font-display: var(--font-fraunces);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
