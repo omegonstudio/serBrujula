@@ -112,6 +112,8 @@ pnpm lint
 pnpm build
 ```
 
+`pnpm build` usa `NODE_OPTIONS=--max-old-space-size=8192` (el typecheck de Next + deps tipadas grandes — p. ej. `googleapis` — suele OOM con el heap por defecto ~2 GB).
+
 ## Variables de entorno
 
 Fuente: [`.env.example`](../.env.example). Validación tipada en `src/lib/env.ts`.
