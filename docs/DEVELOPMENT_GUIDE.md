@@ -118,6 +118,17 @@ pnpm build
 
 Fuente: [`.env.example`](../.env.example). Validación tipada en `src/lib/env.ts`.
 
+### Deploy (Vercel)
+
+Layouts público/admin usan `dynamic = "force-dynamic"`: el build **no** necesita DB (evita prerender con Prisma). En runtime sí hace falta configurar en el proyecto Vercel al menos:
+
+- `DATABASE_URL` (Postgres accesible desde Vercel; migraciones con `pnpm db:deploy` aparte)
+- `AUTH_SECRET`
+- `NEXT_PUBLIC_APP_URL` (URL pública del deploy)
+- `NEXTAUTH_URL` (misma URL pública)
+
+Opcionales según feature: MP, Resend, S3, Google Calendar (`TOKEN_ENCRYPTION_KEY`, etc.).
+
 ## Convenciones
 
 - TypeScript estricto; evitar `any`.

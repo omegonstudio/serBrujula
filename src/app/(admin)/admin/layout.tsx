@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 
+/** Auth + Prisma en runtime — no prerender en build sin DATABASE_URL. */
+export const dynamic = "force-dynamic";
+
 const links = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/productos", label: "Productos" },

@@ -79,6 +79,7 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 | ID | Tarea | Estado | Notas |
 |----|-------|--------|-------|
 | Q1 | Gate permanente docs + testing | DONE | Rule `10-docs-and-testing.mdc` alwaysApply; guide + tracker + roadmap |
+| Q2 | Build Vercel sin DATABASE_URL en prerender | DONE | `force-dynamic` en layouts público/admin; heap 8GB en script build |
 
 ---
 
@@ -88,4 +89,4 @@ _Ninguno._
 
 ## Última actualización
 
-Gate Q1 — documentación y testing obligatorios formalizados en Cursor Rules y DEVELOPMENT_GUIDE.
+Q2 — build Vercel: layouts force-dynamic (Prisma solo en runtime) + nota de env en DEVELOPMENT_GUIDE.
