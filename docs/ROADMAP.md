@@ -6,6 +6,8 @@ Una funcionalidad no se marca `COMPLETED` hasta estar implementada y probada.
 
 **Proceso de calidad:** docs + tests son gate permanente (Cursor Rule `10-docs-and-testing.mdc`). Checklist y resumen de cierre en [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md). El gate aplica hacia adelante y al modificar código existente.
 
+**Git / despliegue:** `dev` = full; `main` = presentación (`NEXT_PUBLIC_SITE_MODE=presentation`). Ver [GIT_WORKFLOW.md](./GIT_WORKFLOW.md).
+
 ---
 
 ## Etapa 1 — Web autoadministrable y ecommerce

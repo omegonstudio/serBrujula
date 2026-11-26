@@ -8,12 +8,14 @@ import { clearCart } from "@/modules/cart/application/cart-service";
 import { prisma } from "@/lib/prisma";
 import { isAppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
+import { assertCommerceEnabled } from "@/lib/site-mode";
 
 export async function checkoutAction(formData: FormData) {
   let orderId: string | undefined;
   let cartId: string | undefined;
 
   try {
+    assertCommerceEnabled();
     const fulfillmentType = String(formData.get("fulfillmentType") ?? "PICKUP");
     const { order, payment, cartId: createdCartId } = await createOrderFromCart({
       fullName: String(formData.get("fullName") ?? ""),

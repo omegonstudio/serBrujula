@@ -3,14 +3,20 @@ import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert } from "@/components/ui/alert";
 import { formatArs } from "@/lib/money";
 import { getCartSummary } from "@/modules/cart/application/cart-service";
 import { updateCartItemAction } from "@/modules/cart/application/actions";
+import {
+  isPresentationMode,
+  PRESENTATION_COMMERCE_MESSAGE,
+} from "@/lib/site-mode";
 
 export const metadata = { title: "Carrito" };
 
 export default async function CarritoPage() {
   const { items, subtotalCents } = await getCartSummary();
+  const presentation = isPresentationMode();
 
   return (
     <Container className="space-y-8 py-16">
@@ -18,6 +24,10 @@ export default async function CarritoPage() {
         <h1 className="text-4xl text-ink">Carrito</h1>
         <div className="mt-4 h-1 w-20 bg-clay" />
       </div>
+
+      {presentation ? (
+        <Alert variant="info">{PRESENTATION_COMMERCE_MESSAGE}</Alert>
+      ) : null}
 
       {items.length === 0 ? (
         <EmptyState
@@ -69,12 +79,21 @@ export default async function CarritoPage() {
             <p className="text-xl text-ink">
               Subtotal: <strong>{formatArs(subtotalCents)}</strong>
             </p>
-            <Link
-              href="/checkout"
-              className="rounded-md bg-forest px-5 py-3 text-cream hover:bg-sage"
-            >
-              Continuar al checkout
-            </Link>
+            {presentation ? (
+              <Link
+                href="/contacto"
+                className="rounded-md bg-forest px-5 py-3 text-cream hover:bg-sage"
+              >
+                Consultar por Contacto
+              </Link>
+            ) : (
+              <Link
+                href="/checkout"
+                className="rounded-md bg-forest px-5 py-3 text-cream hover:bg-sage"
+              >
+                Continuar al checkout
+              </Link>
+            )}
           </div>
         </div>
       )}

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/errors";
 import { getCartSummary } from "@/modules/cart/application/cart-service";
 import { getContent } from "@/modules/cms/application/content";
+import { assertCommerceEnabled } from "@/lib/site-mode";
 
 const checkoutSchema = z.object({
   fullName: z.string().min(2),
@@ -27,6 +28,7 @@ function orderNumber() {
 }
 
 export async function createOrderFromCart(raw: CheckoutInput) {
+  assertCommerceEnabled();
   const input = checkoutSchema.parse(raw);
 
   if (input.fulfillmentType === "SHIPPING") {

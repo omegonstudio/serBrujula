@@ -29,6 +29,15 @@ pnpm exec next dev --turbopack -p 3000
 
 Credenciales seed: `SEED_ADMIN_*` en `.env` (default `admin@serbrujula.local` / `ChangeMeAdmin123!`).
 
+## Ramas y modos
+
+| Rama | Uso | `NEXT_PUBLIC_SITE_MODE` |
+|------|-----|-------------------------|
+| `dev` | Desarrollo / Preview | `full` |
+| `main` | Presentación Vercel Production | `presentation` |
+
+En `presentation` el catálogo y el carrito se pueden recorrer; checkout, pagos, webhooks de cobro y reservas comerciales están bloqueados en **servidor**. Detalle: [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md).
+
 ## Pagos
 
 - Con `MERCADOPAGO_ACCESS_TOKEN` + `MERCADOPAGO_WEBHOOK_SECRET`: Checkout Pro + webhook firmado (pedidos y reservas). **Sandbox verificado** (2026-11-26); ver `docs/INTEGRATIONS.md`.

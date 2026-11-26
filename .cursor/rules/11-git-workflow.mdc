@@ -1,0 +1,15 @@
+---
+description: Ramas Git — no mezclar desarrollo (dev) con presentación (main)
+alwaysApply: true
+---
+
+# Git workflow
+
+- Desarrollo activo y features: rama `dev` (o `feature/*` desde `dev`).
+- Presentación Vercel Production: rama `main` con `NEXT_PUBLIC_SITE_MODE=presentation`.
+- No mergear automáticamente todo `dev` → `main`; solo releases explícitas.
+- No force-push ni reescritura de historial compartido sin aprobación humana.
+- Restricciones de cobro en presentation: gates en **servidor** (`assertCommerceEnabled`), no solo UI.
+  Incluye checkout, preferencias MP, pagos/webhooks manuales, reservas públicas, `adminCreateBookingAction`
+  y `POST /api/webhooks/mercadopago` → 403 sin procesar.
+- Detalle: `docs/GIT_WORKFLOW.md`.

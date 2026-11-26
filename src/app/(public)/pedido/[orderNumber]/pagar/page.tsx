@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { formatArs } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { confirmManualPaymentAction } from "@/modules/payments/application/manual-confirm-action";
+import {
+  isPresentationMode,
+  PRESENTATION_COMMERCE_MESSAGE,
+} from "@/lib/site-mode";
 
 export const metadata = { title: "Confirmar pago (dev)" };
 
@@ -13,6 +17,14 @@ export default async function PagarDemoPage({
 }: {
   params: Promise<{ orderNumber: string }>;
 }) {
+  if (isPresentationMode()) {
+    return (
+      <Container className="max-w-lg space-y-6 py-16">
+        <Alert variant="info">{PRESENTATION_COMMERCE_MESSAGE}</Alert>
+      </Container>
+    );
+  }
+
   if (process.env.MERCADOPAGO_ACCESS_TOKEN) {
     redirect("/");
   }

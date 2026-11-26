@@ -2,8 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { confirmPaymentApproved } from "@/modules/orders/application/confirm-payment";
+import { assertCommerceEnabled } from "@/lib/site-mode";
 
 export async function confirmManualPaymentAction(formData: FormData) {
+  assertCommerceEnabled();
   if (process.env.MERCADOPAGO_ACCESS_TOKEN) {
     redirect("/");
   }

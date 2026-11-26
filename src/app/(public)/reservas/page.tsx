@@ -1,8 +1,14 @@
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { BookingWizard } from "@/components/booking/booking-wizard";
 import { prisma } from "@/lib/prisma";
 import { loadSlotsAction } from "@/modules/booking/application/load-slots-action";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Alert } from "@/components/ui/alert";
+import {
+  isPresentationMode,
+  PRESENTATION_COMMERCE_MESSAGE,
+} from "@/lib/site-mode";
 
 export const metadata = { title: "Reservas" };
 
@@ -11,6 +17,23 @@ export default async function ReservasPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  if (isPresentationMode()) {
+    return (
+      <Container className="space-y-6 py-16">
+        <h1 className="text-4xl text-ink">Reservas</h1>
+        <div className="h-1 w-20 bg-clay" />
+        <Alert variant="info">
+          {PRESENTATION_COMMERCE_MESSAGE} Las reservas online no están
+          habilitadas en este entorno. Escribinos desde{" "}
+          <Link href="/contacto" className="underline">
+            Contacto
+          </Link>
+          .
+        </Alert>
+      </Container>
+    );
+  }
+
   const params = await searchParams;
   const services = await prisma.service.findMany({
     where: { isActive: true },

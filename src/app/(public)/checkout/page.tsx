@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,10 @@ import { getCartSummary } from "@/modules/cart/application/cart-service";
 import { getContent } from "@/modules/cms/application/content";
 import { checkoutAction } from "@/modules/checkout/application/actions";
 import { CheckoutFulfillmentFields } from "@/components/shop/checkout-fulfillment-fields";
+import {
+  isPresentationMode,
+  PRESENTATION_COMMERCE_MESSAGE,
+} from "@/lib/site-mode";
 
 export const metadata = { title: "Checkout" };
 
@@ -23,6 +28,7 @@ export default async function CheckoutPage({
   if (items.length === 0) redirect("/carrito");
 
   const shippingCents = Number(await getContent("shipping.flatCents", "250000")) || 0;
+  const presentation = isPresentationMode();
 
   return (
     <Container className="grid gap-10 py-16 lg:grid-cols-[1.2fr_0.8fr]">
@@ -34,34 +40,45 @@ export default async function CheckoutPage({
             {params.error}
           </Alert>
         ) : null}
-        {!process.env.MERCADOPAGO_ACCESS_TOKEN ? (
+        {presentation ? (
+          <Alert className="mt-6" variant="info">
+            {PRESENTATION_COMMERCE_MESSAGE} Podés recorrer el catálogo; para
+            consultas usá{" "}
+            <Link href="/contacto" className="underline">
+              Contacto
+            </Link>
+            .
+          </Alert>
+        ) : !process.env.MERCADOPAGO_ACCESS_TOKEN ? (
           <Alert className="mt-6">
             Mercado Pago no está configurado. El checkout usará el modo de
             confirmación manual de desarrollo (no apto para producción).
           </Alert>
         ) : null}
-        <form action={checkoutAction} className="mt-8 space-y-4">
-          <Label>
-            Nombre completo
-            <Input name="fullName" required autoComplete="name" />
-          </Label>
-          <Label>
-            Email
-            <Input name="email" type="email" required autoComplete="email" />
-          </Label>
-          <Label>
-            Teléfono
-            <Input name="phone" type="tel" autoComplete="tel" />
-          </Label>
-          <CheckoutFulfillmentFields shippingCents={shippingCents} />
-          <Label>
-            Notas
-            <Textarea name="notes" rows={3} />
-          </Label>
-          <Button type="submit" size="lg">
-            Confirmar y pagar
-          </Button>
-        </form>
+        {presentation ? null : (
+          <form action={checkoutAction} className="mt-8 space-y-4">
+            <Label>
+              Nombre completo
+              <Input name="fullName" required autoComplete="name" />
+            </Label>
+            <Label>
+              Email
+              <Input name="email" type="email" required autoComplete="email" />
+            </Label>
+            <Label>
+              Teléfono
+              <Input name="phone" type="tel" autoComplete="tel" />
+            </Label>
+            <CheckoutFulfillmentFields shippingCents={shippingCents} />
+            <Label>
+              Notas
+              <Textarea name="notes" rows={3} />
+            </Label>
+            <Button type="submit" size="lg">
+              Confirmar y pagar
+            </Button>
+          </form>
+        )}
       </div>
       <aside className="h-fit rounded-lg border border-line bg-sand/50 p-6">
         <h2 className="text-xl text-ink">Resumen</h2>

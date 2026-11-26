@@ -38,6 +38,20 @@ pnpm exec next dev --turbopack -p 3000
 Sitio local: http://127.0.0.1:3000  
 Admin seed: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` en `.env`.
 
+### Modos de sitio
+
+- `NEXT_PUBLIC_SITE_MODE=full` (default): ecommerce, MP, reservas.
+- `NEXT_PUBLIC_SITE_MODE=presentation`: demo pública sin cobros (gates en servidor).
+
+Flujo de ramas y Vercel: [GIT_WORKFLOW.md](./GIT_WORKFLOW.md).
+
+Verificar build en ambos modos:
+
+```bash
+NEXT_PUBLIC_SITE_MODE=full pnpm build
+NEXT_PUBLIC_SITE_MODE=presentation pnpm build
+```
+
 ### Mercado Pago en local (ngrok)
 
 Para webhooks y `back_urls` hace falta HTTPS público. Procedimiento completo (credenciales Test, Secret signature, actualización de `NEXT_PUBLIC_APP_URL` cuando cambie el túnel): [INTEGRATIONS.md](./INTEGRATIONS.md) § Local con ngrok.

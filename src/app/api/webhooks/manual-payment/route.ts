@@ -2,8 +2,19 @@ import { NextResponse } from "next/server";
 import { ManualPaymentProvider } from "@/modules/payments/infrastructure/manual-provider";
 import { confirmPaymentApproved } from "@/modules/orders/application/confirm-payment";
 import { logger } from "@/lib/logger";
+import { isAppError } from "@/lib/errors";
+import { assertCommerceEnabled } from "@/lib/site-mode";
 
 export async function POST(request: Request) {
+  try {
+    assertCommerceEnabled();
+  } catch (error) {
+    if (isAppError(error) && error.code === "FORBIDDEN") {
+      return NextResponse.json({ ok: false, error: error.message }, { status: 403 });
+    }
+    throw error;
+  }
+
   if (process.env.MERCADOPAGO_ACCESS_TOKEN) {
     return NextResponse.json(
       { error: "Manual payments disabled when Mercado Pago is configured" },
@@ -33,6 +44,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (isAppError(error) && error.code === "FORBIDDEN") {
+      return NextResponse.json({ ok: false, error: error.message }, { status: 403 });
+    }
     logger.error("manual.webhook.failed", { error });
     return NextResponse.json({ ok: false }, { status: 500 });
   }

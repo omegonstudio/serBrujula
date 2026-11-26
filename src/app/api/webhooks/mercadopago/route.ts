@@ -3,12 +3,24 @@ import { getPaymentProvider } from "@/modules/payments/application/get-provider"
 import { applyMercadoPagoWebhookEvent } from "@/modules/payments/application/apply-webhook-event";
 import { InvalidWebhookSignatureError } from "@/modules/payments/infrastructure/mercadopago-provider";
 import { logger } from "@/lib/logger";
+import {
+  isPresentationMode,
+  PRESENTATION_COMMERCE_MESSAGE,
+} from "@/lib/site-mode";
 
 /**
  * Mercado Pago Webhooks — solo POST firmado.
  * GET (IPN legacy) no confirma pagos: 405.
+ * En presentation: 403 sin procesar (no muta órdenes ni stock).
  */
 export async function POST(request: Request) {
+  if (isPresentationMode()) {
+    return NextResponse.json(
+      { ok: false, error: PRESENTATION_COMMERCE_MESSAGE },
+      { status: 403 },
+    );
+  }
+
   try {
     const provider = getPaymentProvider();
     if (provider.name !== "MERCADO_PAGO") {

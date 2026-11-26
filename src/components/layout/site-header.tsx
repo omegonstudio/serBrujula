@@ -1,18 +1,11 @@
 import Link from "next/link";
 import { getCartSummary } from "@/modules/cart/application/cart-service";
 import { MobileNav } from "@/components/layout/mobile-nav";
-
-const nav = [
-  { href: "/", label: "Inicio" },
-  { href: "/sobre", label: "Sobre" },
-  { href: "/servicios", label: "Servicios" },
-  { href: "/reservas", label: "Reservas" },
-  { href: "/tienda", label: "Tienda" },
-  { href: "/contacto", label: "Contacto" },
-];
+import { getPublicNavItems } from "@/lib/site-mode";
 
 export async function SiteHeader() {
   const { itemCount } = await getCartSummary();
+  const nav = getPublicNavItems();
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-cream/90 backdrop-blur-sm transition-colors">

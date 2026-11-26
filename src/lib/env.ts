@@ -5,6 +5,8 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  /** full = desarrollo/preview completo; presentation = demo Vercel sin cobros. */
+  NEXT_PUBLIC_SITE_MODE: z.enum(["full", "presentation"]).default("full"),
   DATABASE_URL: z.string().min(1),
   NEXTAUTH_URL: z.string().url().optional(),
   AUTH_SECRET: z.string().min(16),

@@ -13,6 +13,7 @@ import type {
 } from "@/modules/payments/domain/payment-provider";
 import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
+import { assertCommerceEnabled } from "@/lib/site-mode";
 
 const SIGNATURE_TOLERANCE_SECONDS = 300;
 
@@ -39,6 +40,7 @@ export class MercadoPagoProvider implements PaymentProvider {
   }
 
   async createCheckout(input: CreateCheckoutInput): Promise<CreateCheckoutResult> {
+    assertCommerceEnabled();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) {
       throw new AppError("PAYMENT", "NEXT_PUBLIC_APP_URL no configurada");

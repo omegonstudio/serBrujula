@@ -4,6 +4,7 @@ import type {
   PaymentProvider,
   PaymentWebhookEvent,
 } from "@/modules/payments/domain/payment-provider";
+import { assertCommerceEnabled } from "@/lib/site-mode";
 
 /**
  * Local/dev provider when Mercado Pago credentials are absent.
@@ -13,6 +14,7 @@ export class ManualPaymentProvider implements PaymentProvider {
   readonly name = "MANUAL" as const;
 
   async createCheckout(input: CreateCheckoutInput): Promise<CreateCheckoutResult> {
+    assertCommerceEnabled();
     const demo = new URL(
       `/pedido/${input.orderNumber}/pagar`,
       process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
@@ -25,6 +27,7 @@ export class ManualPaymentProvider implements PaymentProvider {
   }
 
   async verifyWebhook(request: Request): Promise<PaymentWebhookEvent | null> {
+    assertCommerceEnabled();
     const secret = process.env.MANUAL_PAYMENT_SECRET ?? "dev-manual-secret";
     const header = request.headers.get("x-manual-payment-secret");
     if (header !== secret) return null;

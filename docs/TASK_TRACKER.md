@@ -80,6 +80,7 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 |----|-------|--------|-------|
 | Q1 | Gate permanente docs + testing | DONE | Rule `10-docs-and-testing.mdc` alwaysApply; guide + tracker + roadmap |
 | Q2 | Build Vercel sin DATABASE_URL en prerender | DONE | `force-dynamic` en layouts público/admin; heap 8GB en script build |
+| Q3 | Separación presentation / full (`SITE_MODE`) | DONE | Gates servidor + docs GIT_WORKFLOW; Vercel dashboard pendiente (Etapa E) |
 
 ---
 
@@ -89,4 +90,4 @@ _Ninguno._
 
 ## Última actualización
 
-Auditoría final MP: sandbox verificado (p. ej. `SB-20261126-CCSKE2`). C8 → DONE. Etapa 1 permanece TESTING. Ver INTEGRATIONS.md.
+Etapa C: modo `presentation` con gates comerciales en servidor + commit limpieza debug. Ver `docs/GIT_WORKFLOW.md`.

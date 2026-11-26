@@ -7,6 +7,7 @@ import { createBookingWithHold } from "@/modules/booking/application/create-book
 import { getPaymentProvider } from "@/modules/payments/application/get-provider";
 import { isAppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
+import { assertCommerceEnabled } from "@/lib/site-mode";
 import { requireAdmin } from "@/modules/identity/application/require-admin";
 import {
   cancelBooking,
@@ -37,6 +38,7 @@ export async function submitBookingAction(formData: FormData) {
   let bookingId: string | undefined;
 
   try {
+    assertCommerceEnabled();
     const sessionToken = await bookingSessionToken();
     const { booking, payment } = await createBookingWithHold({
       serviceId: String(formData.get("serviceId") ?? ""),
@@ -120,6 +122,7 @@ export async function submitBookingAction(formData: FormData) {
 
 export async function confirmManualBookingPaymentAction(formData: FormData) {
   "use server";
+  assertCommerceEnabled();
   if (process.env.MERCADOPAGO_ACCESS_TOKEN) redirect("/");
   const bookingId = String(formData.get("bookingId") ?? "");
   const bookingNumber = String(formData.get("bookingNumber") ?? "");
@@ -153,6 +156,7 @@ export async function adminRescheduleBookingAction(formData: FormData) {
 
 export async function adminCreateBookingAction(formData: FormData) {
   await requireAdmin();
+  assertCommerceEnabled();
   await createManualBooking({
     serviceId: String(formData.get("serviceId") ?? ""),
     locationId: String(formData.get("locationId") ?? ""),
