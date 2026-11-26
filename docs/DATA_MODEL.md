@@ -133,7 +133,7 @@ Claves iniciales acotadas a: home, about, services (informativo), contact, foote
 | lowStockThreshold | int | default 5 |
 | updatedAt | datetime | |
 
-Stock se decrementa en transacción al confirmar pago (o al reservar stock en checkout, según política elegida en implementación: preferir **reserva al crear Order PENDING + confirmación en webhook**).
+Stock: se **valida** al crear el pedido (sin hold temporal en esta etapa) y se **descuenta atómicamente** al confirmar pago aprobado (`quantity >= n`, sin negativos ni doble descuento). Webhooks concurrentes usan bloqueo de fila sobre `Payment`.
 
 ### Cart / CartItem
 
@@ -193,13 +193,15 @@ Snapshot de nombre, precio unitario y cantidad (no depender del producto vivo).
 | Campo | Tipo | Notas |
 |-------|------|-------|
 | id | uuid | PK |
-| orderId | uuid | FK |
+| orderId | uuid? | FK order (ecommerce) |
+| bookingId | uuid? | FK booking (único; reservas) |
 | provider | enum | `MERCADO_PAGO` \| `STRIPE` (futuro) \| `MANUAL` |
 | providerPaymentId | string? | unique por provider |
-| idempotencyKey | string | unique |
+| providerCheckoutId | string? | preference id de Mercado Pago |
+| idempotencyKey | string | unique; también header SDK al crear preferencia |
 | status | enum | `PENDING` \| `APPROVED` \| `REJECTED` \| `REFUNDED` |
 | amountCents | int | |
-| rawPayload | json? | audit (sin secretos) |
+| rawPayload | json? | audit / investigation (sin secretos) |
 | createdAt / updatedAt | datetime | |
 
 ### Shipment

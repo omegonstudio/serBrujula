@@ -274,19 +274,20 @@ model OrderStatusHistory {
 }
 
 model Payment {
-  id                String          @id @default(cuid())
-  orderId           String?
-  bookingId         String?         @unique
-  provider          PaymentProvider
-  providerPaymentId String?
-  idempotencyKey    String          @unique
-  status            PaymentStatus   @default(PENDING)
-  amountCents       Int
-  rawPayload        Json?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  order             Order?          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  booking           Booking?        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id                 String          @id @default(cuid())
+  orderId            String?
+  bookingId          String?         @unique
+  provider           PaymentProvider
+  providerPaymentId  String?
+  providerCheckoutId String?
+  idempotencyKey     String          @unique
+  status             PaymentStatus   @default(PENDING)
+  amountCents        Int
+  rawPayload         Json?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  order              Order?          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  booking            Booking?        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerPaymentId])
   @@index([orderId])

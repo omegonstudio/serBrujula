@@ -34,6 +34,8 @@ async function bookingSessionToken() {
 }
 
 export async function submitBookingAction(formData: FormData) {
+  let bookingId: string | undefined;
+
   try {
     const sessionToken = await bookingSessionToken();
     const { booking, payment } = await createBookingWithHold({
@@ -46,6 +48,7 @@ export async function submitBookingAction(formData: FormData) {
       notes: String(formData.get("notes") ?? "") || undefined,
       sessionToken,
     });
+    bookingId = booking.id;
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const provider = getPaymentProvider();
@@ -62,6 +65,13 @@ export async function submitBookingAction(formData: FormData) {
       idempotencyKey: payment.idempotencyKey,
     });
 
+    if (checkout.providerCheckoutId) {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { providerCheckoutId: checkout.providerCheckoutId },
+      });
+    }
+
     // Manual provider uses /pedido/.../pagar — override for bookings
     if (provider.name === "MANUAL") {
       redirect(`/reserva/${booking.bookingNumber}/pagar`);
@@ -70,7 +80,37 @@ export async function submitBookingAction(formData: FormData) {
     redirect(checkout.redirectUrl);
   } catch (error) {
     if (typeof error === "object" && error && "digest" in error) throw error;
-    logger.error("booking.submit.failed", { error });
+
+    if (bookingId) {
+      try {
+        await prisma.$transaction(async (tx) => {
+          await tx.booking.updateMany({
+            where: {
+              id: bookingId,
+              status: { not: "CONFIRMED" },
+            },
+            data: { status: "CANCELLED" },
+          });
+          await tx.payment.updateMany({
+            where: {
+              bookingId,
+              status: { not: "APPROVED" },
+            },
+            data: {
+              status: "REJECTED",
+              rawPayload: { reason: "preference_create_failed" },
+            },
+          });
+        });
+      } catch (compensateError) {
+        logger.error("booking.compensate_failed", {
+          bookingId,
+          error: compensateError,
+        });
+      }
+    }
+
+    logger.error("booking.submit.failed", { error, bookingId });
     const message = isAppError(error)
       ? error.message
       : "No se pudo crear la reserva";

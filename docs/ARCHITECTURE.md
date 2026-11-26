@@ -110,15 +110,15 @@ Arquitectura de `User` + roles desde el inicio. Etapas 1–2: checkout y reserva
 
 ```text
 PaymentProvider
-  ├── createCheckout(order) → redirectUrl
-  ├── verifyWebhook(request) → PaymentEvent
-  └── getPaymentStatus(externalId)
+  ├── createCheckout(input) → redirectUrl
+  └── verifyWebhook(request) → PaymentWebhookEvent | null
 
-MercadoPagoProvider  (etapa 1)
+MercadoPagoProvider  (si MERCADOPAGO_ACCESS_TOKEN)
+ManualPaymentProvider (dev/E2E si no hay token)
 StripeProvider       (futuro, si aplica)
 ```
 
-Reglas: precios y totales solo en servidor; confirmación de pago solo por webhook verificado; redirect del usuario no marca `PAID`.
+Reglas: precios y totales solo en servidor; redirect del usuario no marca `PAID`. Webhook MP: solo POST firmado (`WebhookSignatureValidator` + `MERCADOPAGO_WEBHOOK_SECRET` obligatorio si hay token); valida importe/moneda/`external_reference`; idempotencia con `FOR UPDATE` + stock atómico. Sandbox verificado 2026-11-26. Detalle: [INTEGRATIONS.md](./INTEGRATIONS.md).
 
 ## Reservas y calendario (etapa 2, diseñado ya)
 

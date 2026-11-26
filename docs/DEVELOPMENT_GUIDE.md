@@ -32,10 +32,23 @@ cp .env.example .env   # solo la primera vez
 pnpm install
 pnpm db:migrate
 pnpm db:seed
-pnpm exec next dev --turbopack -p 3001
+pnpm exec next dev --turbopack -p 3000
 ```
 
+Sitio local: http://127.0.0.1:3000  
 Admin seed: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` en `.env`.
+
+### Mercado Pago en local (ngrok)
+
+Para webhooks y `back_urls` hace falta HTTPS público. Procedimiento completo (credenciales Test, Secret signature, actualización de `NEXT_PUBLIC_APP_URL` cuando cambie el túnel): [INTEGRATIONS.md](./INTEGRATIONS.md) § Local con ngrok.
+
+```bash
+pnpm exec next dev --turbopack -p 3000
+ngrok http 3000
+# NEXT_PUBLIC_APP_URL=https://xxxx.ngrok-free.app  (+ reiniciar Next)
+```
+
+Sin `MERCADOPAGO_ACCESS_TOKEN` la app usa modo MANUAL (E2E).
 
 ## Flujo de trabajo
 

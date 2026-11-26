@@ -38,12 +38,26 @@ export default async function PedidoPage({
         </Alert>
       ) : null}
       {status === "failure" ? (
-        <Alert variant="error">El pago no se completó. Podés intentar de nuevo desde la tienda.</Alert>
+        <Alert variant="error">
+          El pago no se completó. Si el pedido figura cancelado, podés armar
+          uno nuevo desde la tienda (el carrito se conserva si el checkout no
+          llegó a Mercado Pago).
+        </Alert>
+      ) : null}
+      {status === "pending" && !paid ? (
+        <Alert>
+          El pago está pendiente. Cuando Mercado Pago lo confirme, el pedido
+          pasará a pagado automáticamente.
+        </Alert>
       ) : null}
 
       {paid ? (
         <Alert variant="success">
           Pago confirmado. Gracias por tu compra.
+        </Alert>
+      ) : order.status === "CANCELLED" ? (
+        <Alert variant="error">
+          Pedido cancelado. Podés volver a la tienda para un nuevo intento.
         </Alert>
       ) : (
         <Alert>Estado actual: pendiente de pago / procesamiento.</Alert>

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/errors";
-import { clearCart, getCartSummary } from "@/modules/cart/application/cart-service";
+import { getCartSummary } from "@/modules/cart/application/cart-service";
 import { getContent } from "@/modules/cms/application/content";
 
 const checkoutSchema = z.object({
@@ -127,9 +127,8 @@ export async function createOrderFromCart(raw: CheckoutInput) {
       },
     });
 
+    // Cart is cleared only after the payment preference is created successfully
+    // (see checkoutAction). Keeps cart intact if Mercado Pago fails.
     return { order, payment, cartId: cart.id };
-  }).then(async (result) => {
-    await clearCart(result.cartId);
-    return { order: result.order, payment: result.payment };
   });
 }

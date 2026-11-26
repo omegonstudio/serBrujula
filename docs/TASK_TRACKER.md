@@ -48,7 +48,7 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 | C5 | Catálogo + fichas producto | DONE | |
 | C6 | Carrito | DONE | cookie sb_cart |
 | C7 | Checkout envío/retiro | DONE | |
-| C8 | Mercado Pago + webhooks idempotentes | DONE | MANUAL si no hay token MP |
+| C8 | Mercado Pago + webhooks idempotentes | DONE | Sandbox 2026-11-26 OK (APPROVED/PAID/stock/webhook firmado); unit 47 OK; residuos: pedidos PENDING abandonados, IPN legacy 401, E2E MANUAL a revalidar |
 | C9 | Pedidos + inventario | DONE | confirmación atómica |
 | C10 | Admin dashboard / productos / pedidos | DONE | |
 | C11 | Resend (pedido + contacto) | DONE | skip log si no hay API key |
@@ -89,4 +89,4 @@ _Ninguno._
 
 ## Última actualización
 
-Q2 — build Vercel: layouts force-dynamic (Prisma solo en runtime) + nota de env en DEVELOPMENT_GUIDE.
+Auditoría final MP: sandbox verificado (p. ej. `SB-20261126-CCSKE2`). C8 → DONE. Etapa 1 permanece TESTING. Ver INTEGRATIONS.md.

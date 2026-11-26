@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { sendOrderPaidEmail } from "@/modules/notifications/application/mail";
 import { sendBookingConfirmedEmail } from "@/modules/notifications/application/booking-mail";
@@ -14,6 +15,8 @@ type ConfirmInput = {
 
 /**
  * Marks payment approved. Idempotent for orders and bookings.
+ * Uses row lock + conditional updates so concurrent webhooks cannot
+ * double-decrement stock or send duplicate side effects.
  */
 export async function confirmPaymentApproved(input: ConfirmInput) {
   if (!input.orderId && !input.bookingId) {
@@ -38,50 +41,110 @@ async function confirmOrderPayment(input: ConfirmInput) {
       throw new Error(`Payment not found for order ${input.orderId}`);
     }
 
-    if (payment.status === "APPROVED" && payment.order.status === "PAID") {
-      return { kind: "order" as const, payment, order: payment.order, alreadyProcessed: true };
+    await tx.$executeRaw`SELECT id FROM "Payment" WHERE id = ${payment.id} FOR UPDATE`;
+
+    const locked = await tx.payment.findUnique({
+      where: { id: payment.id },
+      include: { order: { include: { items: true } } },
+    });
+    if (!locked?.order) {
+      throw new Error(`Payment not found for order ${input.orderId}`);
     }
 
-    for (const item of payment.order.items) {
-      if (!item.productId) continue;
-      const inv = await tx.inventory.findUnique({
-        where: { productId: item.productId },
-      });
-      if (!inv || inv.quantity < item.quantity) {
-        throw new Error(`Stock insuficiente al confirmar ${item.productName}`);
+    if (locked.status === "APPROVED") {
+      if (locked.order.status !== "PAID") {
+        const fromStatus = locked.order.status;
+        await tx.order.update({
+          where: { id: locked.orderId! },
+          data: { status: "PAID" },
+        });
+        await tx.orderStatusHistory.create({
+          data: {
+            orderId: locked.orderId!,
+            fromStatus,
+            toStatus: "PAID",
+            note: "Pago confirmado por proveedor",
+          },
+        });
       }
-      await tx.inventory.update({
-        where: { productId: item.productId },
+      const order = await tx.order.findUniqueOrThrow({
+        where: { id: locked.orderId! },
+        include: { items: true, customerProfile: true },
+      });
+      return {
+        kind: "order" as const,
+        payment: locked,
+        order,
+        alreadyProcessed: true,
+      };
+    }
+
+    for (const item of locked.order.items) {
+      if (!item.productId) continue;
+      const stocked = await tx.inventory.updateMany({
+        where: {
+          productId: item.productId,
+          quantity: { gte: item.quantity },
+        },
         data: { quantity: { decrement: item.quantity } },
       });
+      if (stocked.count === 0) {
+        throw new AppError(
+          "STOCK",
+          `Stock insuficiente al confirmar ${item.productName}`,
+        );
+      }
     }
 
-    const updatedPayment = await tx.payment.update({
-      where: { id: payment.id },
+    const claimed = await tx.payment.updateMany({
+      where: {
+        id: locked.id,
+        status: { not: "APPROVED" },
+      },
       data: {
         status: "APPROVED",
-        providerPaymentId: input.providerPaymentId ?? payment.providerPaymentId,
+        providerPaymentId: input.providerPaymentId ?? locked.providerPaymentId,
         rawPayload: input.rawPayload ?? undefined,
       },
     });
 
-    const fromStatus = payment.order.status;
-    const order = await tx.order.update({
-      where: { id: payment.orderId! },
+    // Under FOR UPDATE this should not happen; abort to roll back stock.
+    if (claimed.count === 0) {
+      throw new AppError("CONFLICT", "Pago ya procesado concurrentemente");
+    }
+
+    const fromStatus = locked.order.status;
+    await tx.order.updateMany({
+      where: {
+        id: locked.orderId!,
+        status: { not: "PAID" },
+      },
       data: { status: "PAID" },
-      include: { items: true, customerProfile: true },
     });
 
     await tx.orderStatusHistory.create({
       data: {
-        orderId: order.id,
+        orderId: locked.orderId!,
         fromStatus,
         toStatus: "PAID",
         note: "Pago confirmado por proveedor",
       },
     });
 
-    return { kind: "order" as const, payment: updatedPayment, order, alreadyProcessed: false };
+    const order = await tx.order.findUniqueOrThrow({
+      where: { id: locked.orderId! },
+      include: { items: true, customerProfile: true },
+    });
+    const updatedPayment = await tx.payment.findUniqueOrThrow({
+      where: { id: locked.id },
+    });
+
+    return {
+      kind: "order" as const,
+      payment: updatedPayment,
+      order,
+      alreadyProcessed: false,
+    };
   });
 
   if (!result.alreadyProcessed) {
@@ -107,43 +170,68 @@ async function confirmBookingPayment(input: ConfirmInput) {
       throw new Error(`Payment not found for booking ${input.bookingId}`);
     }
 
-    if (
-      payment.status === "APPROVED" &&
-      payment.booking.status === "CONFIRMED"
-    ) {
+    await tx.$executeRaw`SELECT id FROM "Payment" WHERE id = ${payment.id} FOR UPDATE`;
+
+    const locked = await tx.payment.findUnique({
+      where: { id: payment.id },
+      include: { booking: true },
+    });
+    if (!locked?.booking) {
+      throw new Error(`Payment not found for booking ${input.bookingId}`);
+    }
+
+    if (locked.status === "APPROVED") {
+      if (locked.booking.status !== "CONFIRMED") {
+        await tx.booking.update({
+          where: { id: locked.bookingId! },
+          data: {
+            status: "CONFIRMED",
+            syncStatus: "SYNC_PENDING",
+          },
+        });
+      }
+      const booking = await tx.booking.findUniqueOrThrow({
+        where: { id: locked.bookingId! },
+      });
       return {
         kind: "booking" as const,
-        payment,
-        booking: payment.booking,
+        payment: locked,
+        booking,
         alreadyProcessed: true,
       };
     }
 
-    // Final overlap check
     const conflict = await tx.booking.findFirst({
       where: {
-        id: { not: payment.booking.id },
-        locationId: payment.booking.locationId,
+        id: { not: locked.booking.id },
+        locationId: locked.booking.locationId,
         status: { in: ["PENDING_PAYMENT", "CONFIRMED"] },
-        occupiedStartsAt: { lt: payment.booking.occupiedEndsAt },
-        occupiedEndsAt: { gt: payment.booking.occupiedStartsAt },
+        occupiedStartsAt: { lt: locked.booking.occupiedEndsAt },
+        occupiedEndsAt: { gt: locked.booking.occupiedStartsAt },
       },
     });
     if (conflict) {
       throw new Error("Conflicto de horario al confirmar la reserva");
     }
 
-    const updatedPayment = await tx.payment.update({
-      where: { id: payment.id },
+    const claimed = await tx.payment.updateMany({
+      where: {
+        id: locked.id,
+        status: { not: "APPROVED" },
+      },
       data: {
         status: "APPROVED",
-        providerPaymentId: input.providerPaymentId ?? payment.providerPaymentId,
+        providerPaymentId: input.providerPaymentId ?? locked.providerPaymentId,
         rawPayload: input.rawPayload ?? undefined,
       },
     });
 
+    if (claimed.count === 0) {
+      throw new AppError("CONFLICT", "Pago de reserva ya procesado concurrentemente");
+    }
+
     const booking = await tx.booking.update({
-      where: { id: payment.bookingId! },
+      where: { id: locked.bookingId! },
       data: {
         status: "CONFIRMED",
         syncStatus: "SYNC_PENDING",
@@ -156,6 +244,10 @@ async function confirmBookingPayment(input: ConfirmInput) {
         startsAt: booking.occupiedStartsAt,
         endsAt: booking.occupiedEndsAt,
       },
+    });
+
+    const updatedPayment = await tx.payment.findUniqueOrThrow({
+      where: { id: locked.id },
     });
 
     return {

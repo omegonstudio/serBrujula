@@ -35,7 +35,7 @@ User, AdminProfile, CustomerProfile, SiteContent, Product*, Inventory, Cart*, Or
 
 ### Integraciones
 
-Mercado Pago, Resend, S3-compatible.
+Mercado Pago (Checkout Pro + webhook firmado; **sandbox verificado 2026-11-26**, C8 DONE — [INTEGRATIONS.md](./INTEGRATIONS.md)), Resend, S3-compatible. Etapa 1 global sigue `TESTING`.
 
 ### Riesgos
 

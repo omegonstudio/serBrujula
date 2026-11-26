@@ -19,10 +19,10 @@ cp .env.example .env   # si aún no existe
 pnpm install
 pnpm db:migrate
 pnpm db:seed
-pnpm exec next dev --turbopack -p 3001
+pnpm exec next dev --turbopack -p 3000
 ```
 
-- Sitio: http://127.0.0.1:3001  
+- Sitio: http://127.0.0.1:3000  
 - Reservas: `/reservas`  
 - Admin: `/admin/login`  
 - Agenda: `/admin/agenda` · Calendar: `/admin/calendario`
@@ -31,9 +31,10 @@ Credenciales seed: `SEED_ADMIN_*` en `.env` (default `admin@serbrujula.local` / 
 
 ## Pagos
 
-- Con `MERCADOPAGO_ACCESS_TOKEN`: Checkout Pro + webhook (pedidos y reservas).
-- Sin token: modo **MANUAL de desarrollo** (pantallas explícitas). No usar en producción.
+- Con `MERCADOPAGO_ACCESS_TOKEN` + `MERCADOPAGO_WEBHOOK_SECRET`: Checkout Pro + webhook firmado (pedidos y reservas). **Sandbox verificado** (2026-11-26); ver `docs/INTEGRATIONS.md`.
+- Sin token: modo **MANUAL de desarrollo** (pantallas explícitas / E2E). No usar en producción.
 - El return URL **no** marca pagado/confirmado.
+- Local con MP: `ngrok http 3000` y `NEXT_PUBLIC_APP_URL=https://…ngrok…` (no localhost).
 
 ## Google Calendar
 

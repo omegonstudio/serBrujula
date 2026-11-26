@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
 import { getPaymentProvider } from "@/modules/payments/application/get-provider";
-import { confirmPaymentApproved } from "@/modules/orders/application/confirm-payment";
-import { prisma } from "@/lib/prisma";
+import { applyMercadoPagoWebhookEvent } from "@/modules/payments/application/apply-webhook-event";
+import { InvalidWebhookSignatureError } from "@/modules/payments/infrastructure/mercadopago-provider";
 import { logger } from "@/lib/logger";
 
+/**
+ * Mercado Pago Webhooks — solo POST firmado.
+ * GET (IPN legacy) no confirma pagos: 405.
+ */
 export async function POST(request: Request) {
   try {
     const provider = getPaymentProvider();
     if (provider.name !== "MERCADO_PAGO") {
-      return NextResponse.json({ ok: false, reason: "provider_mismatch" }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, reason: "provider_mismatch" },
+        { status: 400 },
+      );
     }
 
     const event = await provider.verifyWebhook(request);
@@ -16,51 +23,42 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
-    if (event.status !== "APPROVED" || !event.orderId) {
-      logger.info("mp.webhook.not_approved", {
-        status: event.status,
-        ref: event.orderId,
-      });
-      return NextResponse.json({ ok: true });
-    }
+    const result = await applyMercadoPagoWebhookEvent(event);
 
-    const existing = await prisma.payment.findFirst({
-      where: {
-        provider: "MERCADO_PAGO",
-        providerPaymentId: event.providerPaymentId,
-        status: "APPROVED",
-      },
-    });
-    if (existing) {
-      return NextResponse.json({ ok: true, duplicate: true });
-    }
-
-    const payment = await prisma.payment.findFirst({
-      where: {
-        OR: [{ orderId: event.orderId }, { bookingId: event.orderId }],
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    if (!payment) {
-      logger.warn("mp.webhook.payment_missing", { ref: event.orderId });
+    if (result.outcome === "not_found") {
       return NextResponse.json({ ok: false }, { status: 404 });
     }
 
-    await confirmPaymentApproved({
-      orderId: payment.orderId ?? undefined,
-      bookingId: payment.bookingId ?? undefined,
-      providerPaymentId: event.providerPaymentId,
-      rawPayload: event.raw as object,
-    });
+    if (result.outcome === "mismatch") {
+      return NextResponse.json({ ok: true, mismatch: true });
+    }
 
-    return NextResponse.json({ ok: true });
+    if (result.outcome === "duplicate") {
+      return NextResponse.json({ ok: true, duplicate: true });
+    }
+
+    if (result.outcome === "ignored") {
+      return NextResponse.json({ ok: true, ignored: true, reason: result.reason });
+    }
+
+    return NextResponse.json({ ok: true, status: result.status });
   } catch (error) {
+    if (error instanceof InvalidWebhookSignatureError) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
     logger.error("mp.webhook.failed", { error });
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }
 
-export async function GET(request: Request) {
-  return POST(request);
+export async function GET() {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: "method_not_allowed",
+      message:
+        "IPN GET no está soportado. Configurá Webhooks POST firmados en Mercado Pago.",
+    },
+    { status: 405, headers: { Allow: "POST" } },
+  );
 }

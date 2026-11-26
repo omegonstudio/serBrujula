@@ -18,10 +18,12 @@ export type CreateCheckoutResult = {
 };
 
 export type PaymentWebhookEvent = {
+  /** Local order id or booking id (external_reference). */
   orderId?: string;
   providerPaymentId: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "REFUNDED";
   amountCents?: number;
+  currency?: string;
   raw: unknown;
 };
 

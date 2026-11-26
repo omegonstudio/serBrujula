@@ -29,6 +29,10 @@ const SENSITIVE_KEYS = [
   "secret",
   "apiKey",
   "creditCard",
+  "x-signature",
+  "xSignature",
+  "signature",
+  "webhookSecret",
 ];
 
 function sanitize(fields?: LogFields): LogFields | undefined {
