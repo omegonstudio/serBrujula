@@ -50,10 +50,10 @@ Cuando el cliente apruebe y la validación técnica cierre:
 
 | Ambiente | Uso |
 |----------|-----|
-| Desarrollo local | Docker Postgres (`DATABASE_URL` local). |
-| Presentación (Vercel Production actual) | Postgres managed **demo**; seed marcado como demostración. |
-| Preview full (`dev`) | Postgres managed **dev/preview** distinto. |
-| Producción real (cobros) | Postgres managed **prod**; nunca mezclar con demo/dev. |
+| Desarrollo local | Docker Postgres (`DATABASE_URL` = `DIRECT_URL` local) u opcionalmente Supabase preview. |
+| Presentación (Vercel Production) | Supabase **`serbrujula-presentation`** (pooler runtime + direct migrate). |
+| Preview full (`dev`) | Supabase **`serbrujula-preview`** (distinto; no compartir con presentation). |
+| Producción real (cobros) | Postgres managed **prod** futuro; nunca mezclar con demo/dev. |
 
 ## Conflictos
 

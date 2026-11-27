@@ -29,6 +29,8 @@ Antes de escribir código de producto, leé:
 ```bash
 docker compose up -d
 cp .env.example .env   # solo la primera vez
+# Completá SEED_ADMIN_PASSWORD (≥12, no uses el ejemplo ChangeMeAdmin123!).
+# LOCAL: DATABASE_URL y DIRECT_URL apuntan al mismo Postgres Docker (5434).
 pnpm install
 pnpm db:migrate
 pnpm db:seed
@@ -36,14 +38,35 @@ pnpm exec next dev --turbopack -p 3000
 ```
 
 Sitio local: http://127.0.0.1:3000  
-Admin seed: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` en `.env`.
+Admin seed: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` / `SEED_ADMIN_NAME` (**obligatorios**; sin password por defecto).
 
 ### Modos de sitio
 
 - `NEXT_PUBLIC_SITE_MODE=full` (default): ecommerce, MP, reservas; CTA «Reservar online» visible.
 - `NEXT_PUBLIC_SITE_MODE=presentation`: demo pública sin cobros (gates en servidor). Nav sin Reservas; CTA de reservas oculto en `/servicios` (solo Contacto). Contacto no finge éxito si Resend no está configurado.
 
-Flujo de ramas y Vercel: [GIT_WORKFLOW.md](./GIT_WORKFLOW.md). Preparación deployment: auditoría E1; correcciones E2.1 (CTA, contacto, logs) en `dev` antes de configurar Vercel (E2.2+).
+Flujo de ramas y Vercel: [GIT_WORKFLOW.md](./GIT_WORKFLOW.md). E2.1 publicado en `dev`. E2.2 prepara Supabase (presentation + preview); creación de proyectos pendiente de aprobación.
+
+### Supabase (PostgreSQL managed)
+
+La app usa **Prisma + Auth.js**. No se usa Supabase Auth ni `service_role` en el frontend.
+
+| Entorno | Proyecto Supabase sugerido | App |
+|----------|----------------------------|-----|
+| Vercel Production (`main`) | `serbrujula-presentation` | `SITE_MODE=presentation` |
+| Vercel Preview (`dev`) | `serbrujula-preview` | `SITE_MODE=full` |
+| Local | Docker `5434` **o** preview (explícito) | `full` |
+
+**Conexiones (Prisma 6.19):**
+
+| Variable | Uso | Supabase |
+|----------|-----|----------|
+| `DATABASE_URL` | Runtime (Prisma Client / Vercel serverless) | Transaction pooler `:6543` + `?pgbouncer=true` |
+| `DIRECT_URL` | `prisma migrate` / `db seed` / Studio | Direct `:5432` **o** Session pooler `:5432` |
+
+En local ambas = URL Docker. SSL: las URLs de Supabase ya exigen TLS; no desactivar SSL.
+
+Detalle, migraciones, seed, backups y checklist Vercel: [INTEGRATIONS.md](./INTEGRATIONS.md) § Supabase PostgreSQL.
 
 Verificar build en ambos modos:
 
@@ -149,12 +172,14 @@ Fuente: [`.env.example`](../.env.example). Validación tipada en `src/lib/env.ts
 
 Layouts público/admin usan `dynamic = "force-dynamic"`: el build **no** necesita DB (evita prerender con Prisma). En runtime sí hace falta configurar en el proyecto Vercel al menos:
 
-- `DATABASE_URL` (Postgres accesible desde Vercel; migraciones con `pnpm db:deploy` aparte)
+- `DATABASE_URL` (pooler transaction — presentation ≠ preview)
+- `DIRECT_URL` (solo para CLI/migrate; también en entorno local de quien ejecute `db:deploy`)
 - `AUTH_SECRET`
 - `NEXT_PUBLIC_APP_URL` (URL pública del deploy)
 - `NEXTAUTH_URL` (misma URL pública)
+- Production: `NEXT_PUBLIC_SITE_MODE=presentation`
 
-Opcionales según feature: MP, Resend, S3, Google Calendar (`TOKEN_ENCRYPTION_KEY`, etc.).
+Opcionales según feature: MP, Resend, S3, Google Calendar (`TOKEN_ENCRYPTION_KEY`, etc.). Preview: no reutilizar secretos ni DB de presentation.
 
 ## Convenciones
 

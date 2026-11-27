@@ -1,13 +1,20 @@
 import { hash } from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
+import { resolveSeedAdmin } from "./seed-admin";
 
 const prisma = new PrismaClient();
 
+/**
+ * Seed DEMO idempotente (upserts).
+ *
+ * - No crea clientes/pedidos reales.
+ * - Admin solo vía SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD / SEED_ADMIN_NAME (obligatorios; sin defaults de password).
+ * - Re-ejecutar: actualiza CMS DEMO, productos DEMO, servicios DEMO y reglas de disponibilidad
+ *   de las ubicaciones seed. No borra Orders/Bookings/CustomerProfile ajenos.
+ * - Limitación: sobrescribe valores de keys CMS listadas y stock/descripciones de productos DEMO.
+ */
 async function main() {
-  const email = (process.env.SEED_ADMIN_EMAIL ?? "admin@serbrujula.local").toLowerCase();
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMeAdmin123!";
-  const displayName = process.env.SEED_ADMIN_NAME ?? "Administradora";
-
+  const { email, password, displayName } = resolveSeedAdmin(process.env);
   const passwordHash = await hash(password, 12);
 
   const user = await prisma.user.upsert({
@@ -82,7 +89,7 @@ async function main() {
       key: "services.intro",
       type: "TEXT",
       value:
-        "Masajes y sesiones de acompañamiento. La reserva online se habilitará en la etapa 2.",
+        "Masajes y sesiones de acompañamiento. En la demo, coordiná por el formulario de contacto.",
     },
     {
       key: "services.office",
@@ -126,17 +133,17 @@ async function main() {
     create: {
       name: "Autocuidado",
       slug: "autocuidado",
-      description: "Productos para el cuidado cotidiano del cuerpo.",
+      description: "Productos para el cuidado cotidiano del cuerpo. [DEMO]",
       sortOrder: 1,
     },
   });
 
   const demoProducts = [
     {
-      name: "Aceite de automasaje",
+      name: "[DEMO] Aceite de automasaje",
       slug: "aceite-automasaje",
       description:
-        "Aceite vegetal para automasajes suaves. Ideal para rituales de presencia corporal.\n\n[DEMO] Producto de demostración.",
+        "Aceite vegetal para automasajes suaves. Ideal para rituales de presencia corporal.\n\n[DEMO] Producto de demostración — no es una oferta comercial real.",
       priceCents: 890000,
       stock: 25,
       featured: true,
@@ -144,10 +151,10 @@ async function main() {
         "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
     },
     {
-      name: "Crema facial natural",
+      name: "[DEMO] Crema facial natural",
       slug: "crema-facial-natural",
       description:
-        "Crema ligera de cuidado diario con ingredientes de origen natural.\n\n[DEMO] Producto de demostración.",
+        "Crema ligera de cuidado diario con ingredientes de origen natural.\n\n[DEMO] Producto de demostración — no es una oferta comercial real.",
       priceCents: 1250000,
       stock: 15,
       featured: true,
@@ -155,10 +162,10 @@ async function main() {
         "https://images.unsplash.com/photo-1556228578-0d85b1a4d451?auto=format&fit=crop&w=800&q=80",
     },
     {
-      name: "Kit de estiramientos",
+      name: "[DEMO] Kit de estiramientos",
       slug: "kit-estiramientos",
       description:
-        "Kit introductorio con guía impresa de movilidad y estiramientos conscientes.\n\n[DEMO] Producto de demostración.",
+        "Kit introductorio con guía impresa de movilidad y estiramientos conscientes.\n\n[DEMO] Producto de demostración — no es una oferta comercial real.",
       priceCents: 650000,
       stock: 8,
       featured: false,
@@ -218,7 +225,7 @@ async function main() {
   const consultorio = await prisma.serviceLocation.upsert({
     where: { id: "seed-loc-consultorio" },
     update: {
-      name: "Consultorio",
+      name: "Consultorio [DEMO]",
       type: "CONSULTORIO",
       address: "CABA — dirección de demostración",
       isActive: true,
@@ -226,7 +233,7 @@ async function main() {
     },
     create: {
       id: "seed-loc-consultorio",
-      name: "Consultorio",
+      name: "Consultorio [DEMO]",
       type: "CONSULTORIO",
       address: "CABA — dirección de demostración",
       isActive: true,
@@ -237,7 +244,7 @@ async function main() {
   const domicilio = await prisma.serviceLocation.upsert({
     where: { id: "seed-loc-domicilio" },
     update: {
-      name: "Domicilio",
+      name: "Domicilio [DEMO]",
       type: "DOMICILIO",
       coverageNotes: "CABA y alrededores (DEMO)",
       isActive: true,
@@ -245,7 +252,7 @@ async function main() {
     },
     create: {
       id: "seed-loc-domicilio",
-      name: "Domicilio",
+      name: "Domicilio [DEMO]",
       type: "DOMICILIO",
       coverageNotes: "CABA y alrededores (DEMO)",
       isActive: true,
@@ -256,7 +263,7 @@ async function main() {
   const facial = await prisma.service.upsert({
     where: { slug: "masaje-facial" },
     update: {
-      name: "Masaje facial",
+      name: "[DEMO] Masaje facial",
       description: "Sesión facial de autocuidado. [DEMO]",
       durationMinutes: 60,
       bufferBeforeMinutes: 10,
@@ -265,7 +272,7 @@ async function main() {
       isActive: true,
     },
     create: {
-      name: "Masaje facial",
+      name: "[DEMO] Masaje facial",
       slug: "masaje-facial",
       description: "Sesión facial de autocuidado. [DEMO]",
       durationMinutes: 60,
@@ -279,7 +286,7 @@ async function main() {
   const corporal = await prisma.service.upsert({
     where: { slug: "masaje-corporal" },
     update: {
-      name: "Masaje corporal",
+      name: "[DEMO] Masaje corporal",
       description: "Sesión corporal completa. [DEMO]",
       durationMinutes: 75,
       bufferBeforeMinutes: 10,
@@ -288,7 +295,7 @@ async function main() {
       isActive: true,
     },
     create: {
-      name: "Masaje corporal",
+      name: "[DEMO] Masaje corporal",
       slug: "masaje-corporal",
       description: "Sesión corporal completa. [DEMO]",
       durationMinutes: 75,
@@ -313,7 +320,7 @@ async function main() {
     });
   }
 
-  // Weekday rules Mon-Fri 10-18 consultorio; Tue/Thu 14-18 domicilio
+  // Solo reglas de las ubicaciones seed (no toca otras ubicaciones).
   await prisma.availabilityRule.deleteMany({
     where: { locationId: { in: [consultorio.id, domicilio.id] } },
   });
@@ -345,7 +352,7 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error(error);
+    console.error(error instanceof Error ? error.message : error);
     process.exit(1);
   })
   .finally(async () => {

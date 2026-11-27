@@ -81,14 +81,15 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 | Q1 | Gate permanente docs + testing | DONE | Rule `10-docs-and-testing.mdc` alwaysApply; guide + tracker + roadmap |
 | Q2 | Build Vercel sin DATABASE_URL en prerender | DONE | `force-dynamic` en layouts público/admin; heap 8GB en script build |
 | Q3 | Separación presentation / full (`SITE_MODE`) | DONE | Gates servidor + docs GIT_WORKFLOW; Vercel dashboard pendiente (Etapa E) |
-| Q4 | E2.1 prep presentation (CTA/contacto/logs) | TESTING | CTA reservas oculto en presentation; contacto sin falso éxito; logs mail sin PII; tests unit |
+| Q4 | E2.1 prep presentation (CTA/contacto/logs) | DONE | Publicado `6994ec0` en `dev` |
+| Q5 | E2.2 Supabase Postgres prep | TESTING | Schema `DIRECT_URL`; seed sin password default; docs conexiones; **sin** proyectos/migraciones remotas aún |
 
 ---
 
 ## Bloqueos activos
 
-_Ninguno._
+_Ninguno._ Esperando aprobación para crear proyectos Supabase y ejecutar `db:deploy` remoto.
 
 ## Última actualización
 
-E2.1 (`dev`): CTA reservas / contacto Resend / privacidad logs. E1 auditoría Vercel aprobada. Pendiente E2.2 (config Vercel). Ver `docs/GIT_WORKFLOW.md`.
+E2.2 (`dev`): auditoría Prisma↔Supabase; `directUrl`; seed admin obligatorio; docs. No se crearon proyectos ni se migró remoto. Pendiente aprobación E2.3.

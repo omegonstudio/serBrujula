@@ -243,6 +243,89 @@ Implementar como segundo `PaymentProvider` sin cambiar el dominio de Order/Payme
 
 ---
 
+## Supabase PostgreSQL
+
+**Rol:** solo Postgres managed. Auth sigue en **Auth.js**. No integrar Supabase Auth ni exponer `service_role` / anon keys al cliente para esta etapa.
+
+### Arquitectura de conexiones
+
+```
+Vercel Production (main, presentation)
+  └─ DATABASE_URL → serbrujula-presentation (pooler :6543?pgbouncer=true)
+  └─ migrate/seed (manual/CI) → DIRECT_URL presentation (direct o session :5432)
+
+Vercel Preview (dev, full)
+  └─ DATABASE_URL → serbrujula-preview (pooler :6543?pgbouncer=true)
+  └─ migrate/seed → DIRECT_URL preview
+
+Local
+  └─ DATABASE_URL = DIRECT_URL → Docker :5434  (o preview, si se configura explícitamente)
+```
+
+Prisma schema (`prisma/schema.prisma`): `url = env("DATABASE_URL")`, `directUrl = env("DIRECT_URL")`.  
+Runtime: Prisma Client clásico (sin driver adapter). Migraciones: `pnpm db:deploy` (`prisma migrate deploy`) **siempre** contra `DIRECT_URL`.
+
+### Crear proyectos (manual — pendiente de ejecución)
+
+1. Cuenta Supabase → Create project **`serbrujula-presentation`** (región cercana a Vercel `gru1`, p. ej. South America si está disponible).
+2. Create project **`serbrujula-preview`** (misma región preferible; **otro** password de DB).
+3. En cada uno: Project Settings → Database → Connection string:
+   - **Transaction** (port 6543) → `DATABASE_URL` + `?pgbouncer=true` (+ `sslmode=require` si no viene).
+   - **Direct** o **Session** (port 5432) → `DIRECT_URL`.
+4. Guardar passwords en gestor de secretos; **nunca** en Git.
+5. Aún no cablear Vercel hasta aprobación E2.3+.
+
+### Migraciones
+
+Orden en repo (SQL puro Postgres, sin extensiones locales):
+
+1. `20261030182957_init_etapa1`
+2. `20261030190000_booking_calendar_etapa2`
+3. `20261126180000_payment_provider_checkout_id`
+
+```bash
+# Con DIRECT_URL del proyecto destino (presentation o preview):
+pnpm db:deploy
+```
+
+No usar `migrate dev` contra Supabase remoto en CI/deploy.
+
+### Seed DEMO
+
+```bash
+SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD='…≥12…' SEED_ADMIN_NAME=... pnpm db:seed
+```
+
+- Obliga email/password vía env; rechaza defaults tipo `ChangeMeAdmin123!`.
+- Productos/servicios marcados `[DEMO]`; CMS suficiente para home/sobre/servicios/contacto/tienda.
+- Idempotente (upserts). **Limitación:** re-ejecutar sobrescribe keys CMS listadas, stock/descripciones DEMO y reglas de las ubicaciones seed. No borra Orders/Bookings/clientes ajenos.
+- No usar datos personales reales.
+
+### Backups y recuperación
+
+- Activar backups automáticos del plan Supabase (Free: limitaciones; Pro: PITR según plan).
+- Recuperación: restaurar backup en el **mismo** proyecto o crear proyecto nuevo y re-apuntar env Vercel; luego `db:deploy` si el schema quedó atrás + seed DEMO si es presentation vacía.
+- Nunca restaurar un dump de preview sobre presentation (ni viceversa).
+
+### Costes / límites a verificar antes del plan
+
+- Free: proyectos pausados por inactividad, límites de storage/egress, posible add-on IPv4 para direct connection.
+- Connection pooling (Supavisor) incluido; preferir pooler en Vercel serverless.
+- Confirmar región, cuota de dos proyectos y precio Pro si se necesita uptime continuo para presentation.
+
+### Checklist conectar Supabase ↔ Vercel
+
+- [ ] Dos proyectos creados (presentation ≠ preview).
+- [ ] `DATABASE_URL` + `DIRECT_URL` por entorno, sin mezclar.
+- [ ] `pnpm db:deploy` + seed DEMO en cada DB (con passwords fuertes).
+- [ ] Vercel Production: env presentation + `SITE_MODE=presentation`.
+- [ ] Vercel Preview: env preview + `SITE_MODE=full`.
+- [ ] Auth.js `AUTH_SECRET` distinto por entorno; sin Supabase Auth.
+- [ ] Smoke: home/tienda/admin; webhook MP → 403 en presentation.
+- [ ] Sin `service_role` en frontend; sin connection strings en repo.
+
+---
+
 ## Checklist de seguridad de integraciones
 
 - [x] Secretos solo en env / secret manager.
@@ -251,3 +334,5 @@ Implementar como segundo `PaymentProvider` sin cambiar el dominio de Order/Payme
 - [x] Tokens OAuth cifrados en reposo.
 - [x] Logs sin access tokens ni datos de tarjeta.
 - [x] Timezone de negocio fija: `America/Argentina/Buenos_Aires`.
+- [x] Contacto/Resend sin falso éxito; logs mail sin PII (E2.1).
+- [x] Postgres: presentation ≠ preview; Prisma `DATABASE_URL` + `DIRECT_URL` (E2.2).

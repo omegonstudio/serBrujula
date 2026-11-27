@@ -8,11 +8,13 @@ const envSchema = z.object({
   /** full = desarrollo/preview completo; presentation = demo Vercel sin cobros. */
   NEXT_PUBLIC_SITE_MODE: z.enum(["full", "presentation"]).default("full"),
   DATABASE_URL: z.string().min(1),
+  /** Direct/session URL for Prisma migrate/seed; local: same as DATABASE_URL. */
+  DIRECT_URL: z.string().min(1).optional(),
   NEXTAUTH_URL: z.string().url().optional(),
   AUTH_SECRET: z.string().min(16),
   BUSINESS_TIMEZONE: z.string().default("America/Argentina/Buenos_Aires"),
   SEED_ADMIN_EMAIL: z.string().email().optional(),
-  SEED_ADMIN_PASSWORD: z.string().min(8).optional(),
+  SEED_ADMIN_PASSWORD: z.string().min(12).optional(),
   SEED_ADMIN_NAME: z.string().optional(),
   MERCADOPAGO_ACCESS_TOKEN: z.string().optional(),
   MERCADOPAGO_WEBHOOK_SECRET: z.string().optional(),
