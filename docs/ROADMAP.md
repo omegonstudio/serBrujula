@@ -8,7 +8,7 @@ Una funcionalidad no se marca `COMPLETED` hasta estar implementada y probada.
 
 **Git / despliegue:** `dev` = full; `main` = presentación (`NEXT_PUBLIC_SITE_MODE=presentation`). Ver [GIT_WORKFLOW.md](./GIT_WORKFLOW.md).
 
-**Preparación Vercel:** E1 aprobada. E2.1 publicada en `dev`. E2.2 (Supabase presentation + preview, Prisma `DIRECT_URL`, seed endurecido) en preparación documental/código — **sin** crear proyectos ni migrar remoto hasta aprobación. E2.3+ (crear Supabase + cablear Vercel) pendiente.
+**Preparación Vercel:** E1–E2.2 OK. Proyectos Supabase Free `us-east-2` (presentation `cfomrtrkhytmlwjwmfes`, preview `mhzijxwfvissdfgllwsk`): conectividad, **3 migraciones + seed DEMO** aplicados 2026-11-27. Pendiente cablear env en Vercel y smoke deploy.
 
 ---
 

@@ -245,50 +245,96 @@ Implementar como segundo `PaymentProvider` sin cambiar el dominio de Order/Payme
 
 ## Supabase PostgreSQL
 
-**Rol:** solo Postgres managed. Auth sigue en **Auth.js**. No integrar Supabase Auth ni exponer `service_role` / anon keys al cliente para esta etapa.
+**Rol:** solo Postgres managed. Auth sigue en **Auth.js**. No integrar Supabase Auth, `@supabase/supabase-js` ni `service_role` / anon keys en el cliente.
+
+### Proyectos (creados)
+
+| Nombre | Project ref | Región | Plan | Uso |
+|--------|-------------|--------|------|-----|
+| `serbrujula-presentation` | `cfomrtrkhytmlwjwmfes` | `us-east-2` (Ohio) | Free | Vercel Production + `SITE_MODE=presentation` |
+| `serbrujula-preview` | `mhzijxwfvissdfgllwsk` | `us-east-2` (Ohio) | Free | Vercel Preview / `dev` + `SITE_MODE=full` |
+
+Passwords de DB **distintos** por proyecto. Nunca versionar connection strings.
 
 ### Arquitectura de conexiones
 
 ```
 Vercel Production (main, presentation)
-  └─ DATABASE_URL → serbrujula-presentation (pooler :6543?pgbouncer=true)
-  └─ migrate/seed (manual/CI) → DIRECT_URL presentation (direct o session :5432)
+  └─ DATABASE_URL → presentation Transaction :6543 (?pgbouncer=true&sslmode=require)
+  └─ DIRECT_URL   → presentation Session :5432 (?sslmode=require)  — migrate/seed
 
 Vercel Preview (dev, full)
-  └─ DATABASE_URL → serbrujula-preview (pooler :6543?pgbouncer=true)
-  └─ migrate/seed → DIRECT_URL preview
+  └─ DATABASE_URL → preview Transaction :6543 (?pgbouncer=true&sslmode=require)
+  └─ DIRECT_URL   → preview Session :5432 (?sslmode=require)
 
-Local
-  └─ DATABASE_URL = DIRECT_URL → Docker :5434  (o preview, si se configura explícitamente)
+Local (default)
+  └─ DATABASE_URL = DIRECT_URL → Docker :5434  (sin pooler; no tocar al probar remoto)
 ```
 
-Prisma schema (`prisma/schema.prisma`): `url = env("DATABASE_URL")`, `directUrl = env("DIRECT_URL")`.  
-Runtime: Prisma Client clásico (sin driver adapter). Migraciones: `pnpm db:deploy` (`prisma migrate deploy`) **siempre** contra `DIRECT_URL`.
+Prisma (`prisma/schema.prisma`): `provider = postgresql`, `url = env("DATABASE_URL")`, `directUrl = env("DIRECT_URL")`.  
+Runtime: Prisma Client **clásico** (sin `@prisma/adapter-pg`). Migraciones: `pnpm db:deploy` usa `DIRECT_URL`.
 
-### Crear proyectos (manual — pendiente de ejecución)
+### Parámetros de URL (Prisma 6.19 + Supabase)
 
-1. Cuenta Supabase → Create project **`serbrujula-presentation`** (región cercana a Vercel `gru1`, p. ej. South America si está disponible).
-2. Create project **`serbrujula-preview`** (misma región preferible; **otro** password de DB).
-3. En cada uno: Project Settings → Database → Connection string:
-   - **Transaction** (port 6543) → `DATABASE_URL` + `?pgbouncer=true` (+ `sslmode=require` si no viene).
-   - **Direct** o **Session** (port 5432) → `DIRECT_URL`.
-4. Guardar passwords en gestor de secretos; **nunca** en Git.
-5. Aún no cablear Vercel hasta aprobación E2.3+.
+| Tipo | Puerto | Variable | Query params |
+|------|--------|----------|--------------|
+| Transaction pooler (Supavisor) | `6543` | `DATABASE_URL` | **`pgbouncer=true`** (desactiva prepared statements; requerido por Prisma con transaction mode) + **`sslmode=require`** |
+| Session pooler | `5432` | `DIRECT_URL` | **`sslmode=require`** (no hace falta `pgbouncer=true` en session mode) |
+
+Usuario típico del pooler: `postgres.<project-ref>` (el dashboard lo muestra en Connect). Host típico: `aws-1-us-east-2.pooler.supabase.com`.
+
+Plantilla (sustituí `[PASSWORD]` fuera de Git; no pegar valores reales en docs):
+
+```text
+# Presentation — runtime
+DATABASE_URL=postgresql://postgres.cfomrtrkhytmlwjwmfes:[PASSWORD]@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require
+# Presentation — migrate/seed
+DIRECT_URL=postgresql://postgres.cfomrtrkhytmlwjwmfes:[PASSWORD]@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+
+# Preview — runtime
+DATABASE_URL=postgresql://postgres.mhzijxwfvissdfgllwsk:[PASSWORD]@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require
+# Preview — migrate/seed
+DIRECT_URL=postgresql://postgres.mhzijxwfvissdfgllwsk:[PASSWORD]@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require
+```
+
+Si el Connect del dashboard ya incluye params, no duplicarlos; asegurate de que Transaction tenga `pgbouncer=true` y ambas usen SSL.
+
+### Cargar URLs localmente (sin tocar `.env` Docker)
+
+Opción A — exports temporales en una shell (recomendado para prueba / migrate):
+
+```bash
+# NO dejar estos exports en el .env versionado ni en el .env Docker habitual
+export DATABASE_URL='…transaction…'
+export DIRECT_URL='…session…'
+pnpm exec prisma validate
+# Más adelante (otra etapa): pnpm db:deploy && pnpm db:seed
+```
+
+Opción B — archivo local no versionado (p. ej. `.env.presentation.local`) cargado solo cuando haga falta; mantener `.env` con Docker para el día a día.
+
+### Variables de entorno por destino
+
+**Presentation (Vercel Production):** `DATABASE_URL`, `DIRECT_URL` (si se migrará desde CI/local), `AUTH_SECRET` exclusivo, `NEXT_PUBLIC_SITE_MODE=presentation`, `NEXT_PUBLIC_APP_URL`, `NEXTAUTH_URL`.
+
+**Preview:** mismas claves con valores del proyecto preview; `NEXT_PUBLIC_SITE_MODE=full`; `AUTH_SECRET` distinto.
+
+**Local:** Docker en `.env` (sin cambiar). Seed: `SEED_ADMIN_*` obligatorios al ejecutar seed.
 
 ### Migraciones
 
-Orden en repo (SQL puro Postgres, sin extensiones locales):
+Orden en repo (SQL puro Postgres):
 
 1. `20261030182957_init_etapa1`
 2. `20261030190000_booking_calendar_etapa2`
 3. `20261126180000_payment_provider_checkout_id`
 
 ```bash
-# Con DIRECT_URL del proyecto destino (presentation o preview):
+# Con DIRECT_URL del proyecto destino (presentation o preview) — etapa posterior:
 pnpm db:deploy
 ```
 
-No usar `migrate dev` contra Supabase remoto en CI/deploy.
+No usar `migrate dev` contra Supabase remoto.
 
 ### Seed DEMO
 
@@ -296,32 +342,36 @@ No usar `migrate dev` contra Supabase remoto en CI/deploy.
 SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD='…≥12…' SEED_ADMIN_NAME=... pnpm db:seed
 ```
 
-- Obliga email/password vía env; rechaza defaults tipo `ChangeMeAdmin123!`.
-- Productos/servicios marcados `[DEMO]`; CMS suficiente para home/sobre/servicios/contacto/tienda.
-- Idempotente (upserts). **Limitación:** re-ejecutar sobrescribe keys CMS listadas, stock/descripciones DEMO y reglas de las ubicaciones seed. No borra Orders/Bookings/clientes ajenos.
-- No usar datos personales reales.
+Idempotente; productos `[DEMO]`; no datos personales. Re-ejecutar sobrescribe CMS listado / stock DEMO / reglas de ubicaciones seed.
 
-### Backups y recuperación
+### Backups y límites Free
 
-- Activar backups automáticos del plan Supabase (Free: limitaciones; Pro: PITR según plan).
-- Recuperación: restaurar backup en el **mismo** proyecto o crear proyecto nuevo y re-apuntar env Vercel; luego `db:deploy` si el schema quedó atrás + seed DEMO si es presentation vacía.
-- Nunca restaurar un dump de preview sobre presentation (ni viceversa).
+- Pause tras ~7 días de baja actividad; 500 MB DB / proyecto; 2 proyectos activos Free.
+- No restaurar dumps cruzados presentation ↔ preview.
+- Session pooler evita depender del add-on IPv4 para migrate (preferido frente a Direct si hay problemas IPv6).
 
-### Costes / límites a verificar antes del plan
+### Estado migrate / seed (2026-11-27)
 
-- Free: proyectos pausados por inactividad, límites de storage/egress, posible add-on IPv4 para direct connection.
-- Connection pooling (Supavisor) incluido; preferir pooler en Vercel serverless.
-- Confirmar región, cuota de dos proyectos y precio Pro si se necesita uptime continuo para presentation.
+Ejecutado vía Session pooler (`DIRECT_URL`) desde archivos locales gitignored (`.env.supabase.presentation.local` / `.env.supabase.preview.local`):
+
+| Proyecto | Migraciones | Seed | Admin (email only) | Recursos DEMO |
+|----------|-------------|------|--------------------|---------------|
+| presentation `cfomrtrkhytmlwjwmfes` | 3/3 applied | OK | `admin.presentation@serbrujula.demo` | CMS 18 · productos 3 · cat 1 · inv 3 · servicios 2 · ubicaciones 2 |
+| preview `mhzijxwfvissdfgllwsk` | 3/3 applied | OK | `admin.preview@serbrujula.demo` | Igual (base independiente; password distinta) |
+
+Migraciones: `init_etapa1`, `booking_calendar_etapa2`, `payment_provider_checkout_id`.  
+26 tablas públicas por DB (incl. `_prisma_migrations`). Sin `CustomerProfile` / pedidos reales. Passwords **no** documentadas (solo en gestor / archivos locales).
 
 ### Checklist conectar Supabase ↔ Vercel
 
-- [ ] Dos proyectos creados (presentation ≠ preview).
-- [ ] `DATABASE_URL` + `DIRECT_URL` por entorno, sin mezclar.
-- [ ] `pnpm db:deploy` + seed DEMO en cada DB (con passwords fuertes).
+- [x] Dos proyectos creados (refs arriba).
+- [x] Prueba de conectividad por entorno.
+- [x] `pnpm db:deploy` + seed DEMO en cada DB (2026-11-27).
+- [ ] `DATABASE_URL` + `DIRECT_URL` (+ `AUTH_SECRET`, `SITE_MODE`, URLs) en Vercel, sin mezclar.
 - [ ] Vercel Production: env presentation + `SITE_MODE=presentation`.
 - [ ] Vercel Preview: env preview + `SITE_MODE=full`.
-- [ ] Auth.js `AUTH_SECRET` distinto por entorno; sin Supabase Auth.
-- [ ] Smoke: home/tienda/admin; webhook MP → 403 en presentation.
+- [ ] Auth.js `AUTH_SECRET` distinto; sin Supabase Auth.
+- [ ] Smoke home/tienda/admin; webhook MP → 403 en presentation.
 - [ ] Sin `service_role` en frontend; sin connection strings en repo.
 
 ---

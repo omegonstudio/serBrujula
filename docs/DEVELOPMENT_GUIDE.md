@@ -45,28 +45,28 @@ Admin seed: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` / `SEED_ADMIN_NAME` (**ob
 - `NEXT_PUBLIC_SITE_MODE=full` (default): ecommerce, MP, reservas; CTA «Reservar online» visible.
 - `NEXT_PUBLIC_SITE_MODE=presentation`: demo pública sin cobros (gates en servidor). Nav sin Reservas; CTA de reservas oculto en `/servicios` (solo Contacto). Contacto no finge éxito si Resend no está configurado.
 
-Flujo de ramas y Vercel: [GIT_WORKFLOW.md](./GIT_WORKFLOW.md). E2.1 publicado en `dev`. E2.2 prepara Supabase (presentation + preview); creación de proyectos pendiente de aprobación.
+Flujo de ramas y Vercel: [GIT_WORKFLOW.md](./GIT_WORKFLOW.md). Supabase: proyectos creados, conectividad OK, **migraciones + seed DEMO aplicados** (2026-11-27) en presentation y preview. Pendiente: cablear Vercel.
 
 ### Supabase (PostgreSQL managed)
 
-La app usa **Prisma + Auth.js**. No se usa Supabase Auth ni `service_role` en el frontend.
+La app usa **Prisma + Auth.js**. No se usa Supabase Auth, `@supabase/supabase-js` ni `service_role` en el frontend.
 
-| Entorno | Proyecto Supabase sugerido | App |
-|----------|----------------------------|-----|
-| Vercel Production (`main`) | `serbrujula-presentation` | `SITE_MODE=presentation` |
-| Vercel Preview (`dev`) | `serbrujula-preview` | `SITE_MODE=full` |
-| Local | Docker `5434` **o** preview (explícito) | `full` |
+| Entorno | Proyecto | Ref | Región | App |
+|----------|----------|-----|--------|-----|
+| Vercel Production (`main`) | `serbrujula-presentation` | `cfomrtrkhytmlwjwmfes` | `us-east-2` | `SITE_MODE=presentation` |
+| Vercel Preview (`dev`) | `serbrujula-preview` | `mhzijxwfvissdfgllwsk` | `us-east-2` | `SITE_MODE=full` |
+| Local | Docker `5434` (por defecto) | — | local | `full` |
 
-**Conexiones (Prisma 6.19):**
+**Conexiones (Prisma 6.19, Client clásico):**
 
 | Variable | Uso | Supabase |
 |----------|-----|----------|
-| `DATABASE_URL` | Runtime (Prisma Client / Vercel serverless) | Transaction pooler `:6543` + `?pgbouncer=true` |
-| `DIRECT_URL` | `prisma migrate` / `db seed` / Studio | Direct `:5432` **o** Session pooler `:5432` |
+| `DATABASE_URL` | Runtime (Prisma Client / Vercel serverless) | Transaction pooler `:6543` + `pgbouncer=true` (+ `sslmode=require`) |
+| `DIRECT_URL` | `prisma migrate` / `db seed` / Studio | Session pooler `:5432` (+ `sslmode=require`) |
 
-En local ambas = URL Docker. SSL: las URLs de Supabase ya exigen TLS; no desactivar SSL.
+En local **ambas** = URL Docker (sin pooler). No reemplazar Docker al probar remotos: usá un `.env` temporal o export en shell, nunca mezcles presentation ↔ preview.
 
-Detalle, migraciones, seed, backups y checklist Vercel: [INTEGRATIONS.md](./INTEGRATIONS.md) § Supabase PostgreSQL.
+Cómo armar las URLs (sin pegar passwords en Git): [INTEGRATIONS.md](./INTEGRATIONS.md) § Supabase PostgreSQL.
 
 Verificar build en ambos modos:
 

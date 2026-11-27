@@ -82,14 +82,16 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 | Q2 | Build Vercel sin DATABASE_URL en prerender | DONE | `force-dynamic` en layouts público/admin; heap 8GB en script build |
 | Q3 | Separación presentation / full (`SITE_MODE`) | DONE | Gates servidor + docs GIT_WORKFLOW; Vercel dashboard pendiente (Etapa E) |
 | Q4 | E2.1 prep presentation (CTA/contacto/logs) | DONE | Publicado `6994ec0` en `dev` |
-| Q5 | E2.2 Supabase Postgres prep | TESTING | Schema `DIRECT_URL`; seed sin password default; docs conexiones; **sin** proyectos/migraciones remotas aún |
+| Q5 | E2.2 Supabase Postgres prep | DONE | Schema `DIRECT_URL`; seed seguro; docs; commit `9df83b7` |
+| Q6 | E2.2.2 proyectos + docs refs | DONE | Refs `cfomrtrkhytmlwjwmfes` / `mhzijxwfvissdfgllwsk`; host pooler `aws-1-us-east-2` |
+| Q7 | E2.2.3 migrate + seed remoto | TESTING | 2026-11-27: 3 migraciones + seed DEMO en presentation y preview; admins distintos; sin Vercel aún |
 
 ---
 
 ## Bloqueos activos
 
-_Ninguno._ Esperando aprobación para crear proyectos Supabase y ejecutar `db:deploy` remoto.
+_Ninguno._ Pendiente: configurar variables en Vercel (Production → presentation, Preview → preview) y smoke deploy.
 
 ## Última actualización
 
-E2.2 (`dev`): auditoría Prisma↔Supabase; `directUrl`; seed admin obligatorio; docs. No se crearon proyectos ni se migró remoto. Pendiente aprobación E2.3.
+2026-11-27: `prisma migrate deploy` + `db seed` OK en ambos Supabase. Local Docker intacto. Credenciales admin solo en archivos `.env.supabase.*.local` (gitignored).
