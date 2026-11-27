@@ -40,10 +40,10 @@ Admin seed: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` en `.env`.
 
 ### Modos de sitio
 
-- `NEXT_PUBLIC_SITE_MODE=full` (default): ecommerce, MP, reservas.
-- `NEXT_PUBLIC_SITE_MODE=presentation`: demo pública sin cobros (gates en servidor).
+- `NEXT_PUBLIC_SITE_MODE=full` (default): ecommerce, MP, reservas; CTA «Reservar online» visible.
+- `NEXT_PUBLIC_SITE_MODE=presentation`: demo pública sin cobros (gates en servidor). Nav sin Reservas; CTA de reservas oculto en `/servicios` (solo Contacto). Contacto no finge éxito si Resend no está configurado.
 
-Flujo de ramas y Vercel: [GIT_WORKFLOW.md](./GIT_WORKFLOW.md).
+Flujo de ramas y Vercel: [GIT_WORKFLOW.md](./GIT_WORKFLOW.md). Preparación deployment: auditoría E1; correcciones E2.1 (CTA, contacto, logs) en `dev` antes de configurar Vercel (E2.2+).
 
 Verificar build en ambos modos:
 

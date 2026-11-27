@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { getContentMap } from "@/modules/cms/application/content";
+import {
+  getPublicBookingCta,
+  isPresentationMode,
+} from "@/lib/site-mode";
 
 export const metadata = { title: "Servicios" };
 
@@ -11,6 +15,8 @@ export default async function ServiciosPage() {
     "services.home",
     "services.cta",
   ]);
+  const bookingCta = getPublicBookingCta();
+  const presentation = isPresentationMode();
 
   return (
     <Container className="space-y-12 py-16">
@@ -40,19 +46,28 @@ export default async function ServiciosPage() {
       </div>
       <div className="rounded-lg bg-sand p-6">
         <p className="text-ink">
-          {c["services.cta"] ||
-            "Reservá online tu sesión o escribinos si preferís consultar antes."}
+          {presentation
+            ? c["services.cta"] ||
+              "Para coordinar una sesión, escribinos por el formulario de contacto."
+            : c["services.cta"] ||
+              "Reservá online tu sesión o escribinos si preferís consultar antes."}
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/reservas"
-            className="inline-flex rounded-md bg-forest px-4 py-2.5 text-cream hover:bg-sage"
-          >
-            Reservar online
-          </Link>
+          {bookingCta ? (
+            <Link
+              href={bookingCta.href}
+              className="inline-flex rounded-md bg-forest px-4 py-2.5 text-cream hover:bg-sage"
+            >
+              {bookingCta.label}
+            </Link>
+          ) : null}
           <Link
             href="/contacto"
-            className="inline-flex rounded-md border border-forest px-4 py-2.5 text-forest hover:bg-cream"
+            className={
+              bookingCta
+                ? "inline-flex rounded-md border border-forest px-4 py-2.5 text-forest hover:bg-cream"
+                : "inline-flex rounded-md bg-forest px-4 py-2.5 text-cream hover:bg-sage"
+            }
           >
             Consultar
           </Link>

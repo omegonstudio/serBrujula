@@ -32,6 +32,12 @@ export function getPublicNavItems(): PublicNavItem[] {
   return FULL_NAV.filter((item) => item.href !== "/reservas");
 }
 
+/** CTA primario de reservas en superficies públicas (p. ej. /servicios). */
+export function getPublicBookingCta(): PublicNavItem | null {
+  if (isPresentationMode()) return null;
+  return { href: "/reservas", label: "Reservar online" };
+}
+
 /**
  * Server-side gate for economic operations (orders, preferences, manual pay, bookings).
  * UI hiding alone is not sufficient — call from Server Actions / Route Handlers.

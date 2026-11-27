@@ -8,6 +8,8 @@ Una funcionalidad no se marca `COMPLETED` hasta estar implementada y probada.
 
 **Git / despliegue:** `dev` = full; `main` = presentación (`NEXT_PUBLIC_SITE_MODE=presentation`). Ver [GIT_WORKFLOW.md](./GIT_WORKFLOW.md).
 
+**Preparación Vercel:** E1 (auditoría) aprobada. E2.1 (CTA presentation, contacto sin falso éxito, logs sin PII) en curso en `dev`. E2.2+ (dashboard Vercel / DB presentation) pendiente de aprobación.
+
 ---
 
 ## Etapa 1 — Web autoadministrable y ecommerce

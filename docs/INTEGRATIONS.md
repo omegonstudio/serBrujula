@@ -31,7 +31,7 @@ Todas las credenciales van en variables de entorno. Nunca en el cliente ni en el
 | `external_reference` | = `Order.id` |
 | Webhook | `POST ...?data.id=…&type=payment` → 200 + `payment.approved` |
 | Firma | `WebhookSignatureValidator` activo; notificaciones legacy `?id=&topic=` pueden devolver 401 (manifest usa `data.id`) |
-| Correo | Intentado; en local sin `RESEND_API_KEY` → `mail.skipped_no_api_key` (pedido ya confirmado) |
+| Correo | Intentado; en local sin `RESEND_API_KEY` → `mail.skipped_no_api_key` sin PII (pedido ya confirmado) |
 
 SDK: `mercadopago@3.6.1` (`Preference`, `Payment`, `WebhookSignatureValidator`).
 
@@ -150,6 +150,17 @@ Documentación oficial de Mercado Pago es la fuente de verdad para firma y crede
 - Confirmación de pedido.
 - Formulario de contacto (notificación a admin + acuse a visitante).
 - Etapa 2: confirmación / cancelación / reprogramación de reservas.
+
+### Contacto — comportamiento
+
+- Éxito solo si `RESEND_API_KEY` está configurada **y** Resend acepta el envío a admin + acuse al visitante.
+- Sin API key o sin destinatario admin (`EMAIL_ADMIN_TO` / `SEED_ADMIN_EMAIL`): el formulario **no** muestra éxito; informa que el envío por email no está disponible. Si el CMS tiene `contact.email`, esa dirección ya se muestra en `/contacto` como canal alternativo (no se inventan datos).
+- Error de Resend: mensaje genérico al usuario (sin detalles técnicos ni secretos).
+- Pedidos/reservas: si falta la API key se registra `mail.skipped_no_api_key` y el flujo comercial **no** se revierte (el pago/reserva ya está confirmado).
+
+### Privacidad de logs
+
+Los logs de mail solo incluyen `kind` (p. ej. `contact_admin`) y `status` (`sent` | `skipped` | `failed`). **No** se registran destinatarios, asuntos, HTML ni cuerpos. El logger también redacta campos sensibles (`to`, `email`, `subject`, `html`, `message`, tokens, api keys).
 
 ### Variables
 

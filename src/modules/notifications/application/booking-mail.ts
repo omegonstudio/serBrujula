@@ -1,31 +1,7 @@
-import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 import { formatArs } from "@/lib/money";
 import { formatInBusinessTz } from "@/lib/timezone";
-import { logger } from "@/lib/logger";
-
-async function sendMail(input: {
-  to: string | string[];
-  subject: string;
-  html: string;
-}) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "Ser Brújula <onboarding@resend.dev>";
-  if (!apiKey) {
-    logger.info("mail.skipped_no_api_key", {
-      to: input.to,
-      subject: input.subject,
-    });
-    return;
-  }
-  const resend = new Resend(apiKey);
-  await resend.emails.send({
-    from,
-    to: input.to,
-    subject: input.subject,
-    html: input.html,
-  });
-}
+import { sendMail } from "@/modules/notifications/infrastructure/send-mail";
 
 export async function sendBookingConfirmedEmail(bookingId: string) {
   const booking = await prisma.booking.findUnique({
@@ -50,6 +26,7 @@ export async function sendBookingConfirmedEmail(bookingId: string) {
   `;
 
   await sendMail({
+    kind: "booking_confirmed_customer",
     to: booking.customerProfile.email,
     subject: `Reserva confirmada ${booking.bookingNumber}`,
     html,
@@ -58,6 +35,7 @@ export async function sendBookingConfirmedEmail(bookingId: string) {
   const adminTo = process.env.EMAIL_ADMIN_TO;
   if (adminTo) {
     await sendMail({
+      kind: "booking_confirmed_admin",
       to: adminTo,
       subject: `Nueva reserva ${booking.bookingNumber}`,
       html,
@@ -72,6 +50,7 @@ export async function sendBookingCancelledEmail(bookingId: string) {
   });
   if (!booking) return;
   await sendMail({
+    kind: "booking_cancelled_customer",
     to: booking.customerProfile.email,
     subject: `Reserva cancelada ${booking.bookingNumber}`,
     html: `<p>Hola ${booking.customerProfile.fullName},</p>

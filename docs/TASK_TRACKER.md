@@ -51,7 +51,7 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 | C8 | Mercado Pago + webhooks idempotentes | DONE | Sandbox 2026-11-26 OK (APPROVED/PAID/stock/webhook firmado); unit 47 OK; residuos: pedidos PENDING abandonados, IPN legacy 401, E2E MANUAL a revalidar |
 | C9 | Pedidos + inventario | DONE | confirmación atómica |
 | C10 | Admin dashboard / productos / pedidos | DONE | |
-| C11 | Resend (pedido + contacto) | DONE | skip log si no hay API key |
+| C11 | Resend (pedido + contacto) | DONE | Contacto: éxito solo si envío real; sin API key → error UX; logs sin PII (E2.1) |
 | C12 | E2E flujo de compra | DONE | purchase.spec.ts |
 
 ---
@@ -81,6 +81,7 @@ Estados de ítem: `TODO` | `DOING` | `DONE` | `BLOCKED`.
 | Q1 | Gate permanente docs + testing | DONE | Rule `10-docs-and-testing.mdc` alwaysApply; guide + tracker + roadmap |
 | Q2 | Build Vercel sin DATABASE_URL en prerender | DONE | `force-dynamic` en layouts público/admin; heap 8GB en script build |
 | Q3 | Separación presentation / full (`SITE_MODE`) | DONE | Gates servidor + docs GIT_WORKFLOW; Vercel dashboard pendiente (Etapa E) |
+| Q4 | E2.1 prep presentation (CTA/contacto/logs) | TESTING | CTA reservas oculto en presentation; contacto sin falso éxito; logs mail sin PII; tests unit |
 
 ---
 
@@ -90,4 +91,4 @@ _Ninguno._
 
 ## Última actualización
 
-Etapa C: modo `presentation` con gates comerciales en servidor + commit limpieza debug. Ver `docs/GIT_WORKFLOW.md`.
+E2.1 (`dev`): CTA reservas / contacto Resend / privacidad logs. E1 auditoría Vercel aprobada. Pendiente E2.2 (config Vercel). Ver `docs/GIT_WORKFLOW.md`.

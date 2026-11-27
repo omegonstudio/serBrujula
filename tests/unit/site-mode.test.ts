@@ -31,6 +31,21 @@ describe("site-mode", () => {
     ]);
   });
 
+  it("presentation oculta CTA de reservas", async () => {
+    process.env.NEXT_PUBLIC_SITE_MODE = "presentation";
+    const { getPublicBookingCta } = await load();
+    expect(getPublicBookingCta()).toBeNull();
+  });
+
+  it("full muestra CTA de reservas", async () => {
+    process.env.NEXT_PUBLIC_SITE_MODE = "full";
+    const { getPublicBookingCta } = await load();
+    expect(getPublicBookingCta()).toEqual({
+      href: "/reservas",
+      label: "Reservar online",
+    });
+  });
+
   it("assertCommerceEnabled lanza FORBIDDEN en presentation", async () => {
     process.env.NEXT_PUBLIC_SITE_MODE = "presentation";
     const { assertCommerceEnabled } = await load();
